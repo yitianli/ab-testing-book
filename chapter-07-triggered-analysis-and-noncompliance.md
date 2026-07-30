@@ -51,8 +51,8 @@ $$
 
 where:
 
-- \(Z=1\) means assigned to treatment
-- \(Z=0\) means assigned to control
+- $Z=1$ means assigned to treatment
+- $Z=0$ means assigned to control
 
 ITT preserves the benefit of randomization. Because assignment is random, treatment and control groups should be comparable before the experiment.
 
@@ -185,9 +185,9 @@ Examples include:
 
 Let:
 
-- \(Z_i\) be assignment
-- \(D_i\) be actual treatment received
-- \(Y_i\) be outcome
+- $Z_i$ be assignment
+- $D_i$ be actual treatment received
+- $Y_i$ be outcome
 
 In a perfect experiment:
 

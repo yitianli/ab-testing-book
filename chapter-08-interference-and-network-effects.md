@@ -25,13 +25,13 @@ The chapter moves in four steps:
 
 Interference occurs when one unit's treatment affects another unit's outcome.
 
-In a standard user-level A/B test, the outcome for user \(i\) is usually written as:
+In a standard user-level A/B test, the outcome for user $i$ is usually written as:
 
 $$
 Y_i(T_i)
 $$
 
-This notation says user \(i\)'s outcome depends only on their own treatment assignment \(T_i\).
+This notation says user $i$'s outcome depends only on their own treatment assignment $T_i$.
 
 With interference, the outcome may depend on many users' assignments:
 
@@ -348,7 +348,7 @@ Y_{i,g,t}
 + \epsilon_{i,g,t}
 $$
 
-If \(\gamma\) is meaningfully different from zero, that suggests control outcomes vary with nearby treatment intensity.
+If $\gamma$ is meaningfully different from zero, that suggests control outcomes vary with nearby treatment intensity.
 
 This is still diagnostic, not definitive. High-saturation city-hours may differ from low-saturation city-hours in other ways. But it is stronger than simply checking whether the overall control group moved.
 
@@ -466,7 +466,7 @@ $$
 Y_{i,g} = \alpha + \tau T_g + \epsilon_{i,g}
 $$
 
-where \(i\) indexes users or orders, \(g\) indexes cities, and \(T_g\) is the city-level treatment assignment.
+where $i$ indexes users or orders, $g$ indexes cities, and $T_g$ is the city-level treatment assignment.
 
 In a switchback experiment:
 
@@ -474,7 +474,7 @@ $$
 Y_{i,g,t} = \alpha + \tau T_{g,t} + \epsilon_{i,g,t}
 $$
 
-where \(T_{g,t}\) is the treatment assignment for city \(g\) during time window \(t\).
+where $T_{g,t}$ is the treatment assignment for city $g$ during time window $t$.
 
 The raw dataset may contain millions of user or order rows. But treatment variation comes from the randomized clusters or market-time windows. The analysis must respect that assignment level, often by clustering standard errors, aggregating outcomes to the randomized unit, or using randomization inference.
 
@@ -490,8 +490,8 @@ $$
 
 where:
 
-- \(m\) is the average number of observations per randomized cluster
-- \(\rho\) is the intra-cluster correlation
+- $m$ is the average number of observations per randomized cluster
+- $\rho$ is the intra-cluster correlation
 
 The effective sample size is roughly:
 
@@ -500,7 +500,7 @@ n_{\text{eff}} =
 \frac{n}{1 + (m - 1)\rho}
 $$
 
-If \(\rho = 0\), clustering does little harm. But if outcomes inside the same cluster or time block are correlated, the effective sample size can be much smaller than the raw observation count.
+If $\rho = 0$, clustering does little harm. But if outcomes inside the same cluster or time block are correlated, the effective sample size can be much smaller than the raw observation count.
 
 For example, suppose:
 
@@ -578,7 +578,7 @@ Y_{i,g,t}
 + \epsilon_{i,g,t}
 $$
 
-Here, \(i\) might be a delivery, order, user, or session. The treatment varies at the \(g,t\) block level, so the standard errors should allow observations inside the same block to be correlated.
+Here, $i$ might be a delivery, order, user, or session. The treatment varies at the $g,t$ block level, so the standard errors should allow observations inside the same block to be correlated.
 
 For a geo experiment randomized by city, cluster at the city level. For a switchback experiment randomized by city-hour, the first instinct may be to cluster at the city-hour level, but this is not always enough. If outcomes are correlated across adjacent time windows within the same city, the analysis may need city-level clustering, two-way clustering, time-series-aware standard errors, or randomization-based inference.
 
@@ -902,35 +902,35 @@ In this design:
 
 |  | Control Listings | Treatment Listings |
 |---|---:|---:|
-| Control Guests | \(Q_{00}\) | \(Q_{01}\) |
-| Treatment Guests | \(Q_{10}\) | \(Q_{11}\) |
+| Control Guests | $Q_{00}$ | $Q_{01}$ |
+| Treatment Guests | $Q_{10}$ | $Q_{11}$ |
 
 The first index refers to the guest side. The second index refers to the listing side.
 
-- \(Q_{00}\): control guests interacting with control listings
-- \(Q_{01}\): control guests interacting with treatment listings
-- \(Q_{10}\): treatment guests interacting with control listings
-- \(Q_{11}\): treatment guests interacting with treatment listings
+- $Q_{00}$: control guests interacting with control listings
+- $Q_{01}$: control guests interacting with treatment listings
+- $Q_{10}$: treatment guests interacting with control listings
+- $Q_{11}$: treatment guests interacting with treatment listings
 
-The fully treated interaction is \(Q_{11}\), where a treated guest interacts with a treated listing. The fully control interaction is \(Q_{00}\), where a control guest interacts with a control listing.
+The fully treated interaction is $Q_{11}$, where a treated guest interacts with a treated listing. The fully control interaction is $Q_{00}$, where a control guest interacts with a control listing.
 
 The value of this design is not just that it creates four cells. The value is that the mixed cells reveal displacement.
 
 Suppose the treatment is a discount shown only when a treated guest views a treated listing. The outcome is bookings.
 
-\(Q_{11}\) contains the fully treated interactions. Treated guests see discounted treated listings, so bookings in this cell may increase.
+$Q_{11}$ contains the fully treated interactions. Treated guests see discounted treated listings, so bookings in this cell may increase.
 
-\(Q_{01}\) contains control guests and treated listings. These guests do not see the discount, but the treated listings may become less available because treated guests in \(Q_{11}\) booked them. If bookings in \(Q_{01}\) fall relative to \(Q_{00}\), that suggests treated guests are displacing control guests from treated listings.
+$Q_{01}$ contains control guests and treated listings. These guests do not see the discount, but the treated listings may become less available because treated guests in $Q_{11}$ booked them. If bookings in $Q_{01}$ fall relative to $Q_{00}$, that suggests treated guests are displacing control guests from treated listings.
 
-\(Q_{10}\) contains treated guests and control listings. These guests may shift their attention toward discounted treated listings, leaving control listings with fewer bookings. If bookings in \(Q_{10}\) fall relative to \(Q_{00}\), that suggests treated listings are pulling demand away from control listings.
+$Q_{10}$ contains treated guests and control listings. These guests may shift their attention toward discounted treated listings, leaving control listings with fewer bookings. If bookings in $Q_{10}$ fall relative to $Q_{00}$, that suggests treated listings are pulling demand away from control listings.
 
 This is the core intuition:
 
-> \(Q_{11}\) shows the treated match. \(Q_{01}\) and \(Q_{10}\) show where the bookings may have been displaced from.
+> $Q_{11}$ shows the treated match. $Q_{01}$ and $Q_{10}$ show where the bookings may have been displaced from.
 
 Without the mixed cells, the platform may see that treated guests book treated listings more often, but it cannot tell whether those bookings are truly incremental or mostly reallocated from other guests and listings.
 
-In practice, the \(Q\) cells should usually be normalized before comparison, because the four cells may contain different numbers of guest-listing opportunities. If \(a_C\) is the treatment share of guests and \(a_L\) is the treatment share of listings, then the normalized booking rates are conceptually:
+In practice, the $Q$ cells should usually be normalized before comparison, because the four cells may contain different numbers of guest-listing opportunities. If $a_C$ is the treatment share of guests and $a_L$ is the treatment share of listings, then the normalized booking rates are conceptually:
 
 $$
 r_{00} = \frac{Q_{00}}{(1-a_C)(1-a_L)},\quad
@@ -944,9 +944,9 @@ $$
 
 These normalized rates make the mixed-cell comparisons more meaningful. For example:
 
-- \(r_{11} - r_{00}\) shows how the fully treated cell differs from the fully control cell.
-- \(r_{01} - r_{00}\) helps reveal what happens to treated listings when they are seen by control guests.
-- \(r_{10} - r_{00}\) helps reveal what happens to control listings when they are seen by treated guests.
+- $r_{11} - r_{00}$ shows how the fully treated cell differs from the fully control cell.
+- $r_{01} - r_{00}$ helps reveal what happens to treated listings when they are seen by control guests.
+- $r_{10} - r_{00}$ helps reveal what happens to control listings when they are seen by treated guests.
 
 The exact estimator depends on the treatment, the market balance, and the assumptions the platform is willing to make. The important lesson is that two-sided randomization gives the platform information about both demand-side and supply-side competition, which one-sided randomization cannot fully observe.
 

@@ -35,7 +35,7 @@ $$
 \sqrt{\frac{\sigma_T^2}{n_T} + \frac{\sigma_C^2}{n_C}}
 $$
 
-If treatment and control have equal sample size \(n\) and similar variance \(\sigma^2\), this becomes:
+If treatment and control have equal sample size $n$ and similar variance $\sigma^2$, this becomes:
 
 $$
 \text{SE} \approx \sqrt{\frac{2\sigma^2}{n}}
@@ -43,10 +43,10 @@ $$
 
 There are two ways to reduce the standard error:
 
-- Increase \(n\), the sample size
-- Decrease \(\sigma^2\), the outcome variance
+- Increase $n$, the sample size
+- Decrease $\sigma^2$, the outcome variance
 
-Most sample size discussions focus on increasing \(n\). Variance reduction focuses on decreasing \(\sigma^2\).
+Most sample size discussions focus on increasing $n$. Variance reduction focuses on decreasing $\sigma^2$.
 
 This matters because sample size requirements are proportional to variance:
 
@@ -105,7 +105,7 @@ If mobile and desktop users behave differently, stratifying by device can reduce
 
 After stratified randomization, the treatment effect can be estimated within each stratum and then combined.
 
-Let \(h\) index strata. The treatment effect in stratum \(h\) is:
+Let $h$ index strata. The treatment effect in stratum $h$ is:
 
 $$
 \widehat{\tau}_h = \bar{Y}_{T,h} - \bar{Y}_{C,h}
@@ -117,7 +117,7 @@ $$
 \widehat{\tau} = \sum_h w_h \widehat{\tau}_h
 $$
 
-where \(w_h\) is the share of the experiment population in stratum \(h\).
+where $w_h$ is the share of the experiment population in stratum $h$.
 
 This approach has two benefits:
 
@@ -165,9 +165,9 @@ $$
 
 where:
 
-- \(Y_i\) is the outcome
-- \(T_i\) is the treatment indicator
-- \(\tau\) is the treatment effect
+- $Y_i$ is the outcome
+- $T_i$ is the treatment indicator
+- $\tau$ is the treatment effect
 
 Regression adjustment adds covariates:
 
@@ -175,13 +175,13 @@ $$
 Y_i = \alpha + \tau T_i + \beta^\top X_i + \epsilon_i
 $$
 
-where \(X_i\) contains pre-treatment variables such as past activity, country, device, or acquisition channel.
+where $X_i$ contains pre-treatment variables such as past activity, country, device, or acquisition channel.
 
 Because treatment is randomized, adding pre-treatment covariates is not needed for unbiasedness. The simple difference in means is already unbiased.
 
 The purpose is precision.
 
-If \(X_i\) explains variation in \(Y_i\), then the residual noise \(\epsilon_i\) becomes smaller. A smaller residual variance leads to a smaller standard error for \(\tau\).
+If $X_i$ explains variation in $Y_i$, then the residual noise $\epsilon_i$ becomes smaller. A smaller residual variance leads to a smaller standard error for $\tau$.
 
 The covariates should be measured before treatment assignment or at least not affected by treatment. Adjusting for post-treatment variables can bias the effect estimate.
 
@@ -197,8 +197,8 @@ CUPED can be viewed as a special case of regression adjustment where the covaria
 
 Let:
 
-- \(Y_i\) be the experiment-period outcome
-- \(X_i\) be the pre-period version of the same or related metric
+- $Y_i$ be the experiment-period outcome
+- $X_i$ be the pre-period version of the same or related metric
 
 CUPED creates an adjusted outcome:
 
@@ -226,13 +226,13 @@ $$
 \text{Var}(Y)(1 - \rho^2)
 $$
 
-where \(\rho\) is the correlation between the pre-period metric \(X\) and the experiment-period outcome \(Y\).
+where $\rho$ is the correlation between the pre-period metric $X$ and the experiment-period outcome $Y$.
 
 This equation is the heart of CUPED.
 
-If \(X\) and \(Y\) are uncorrelated, then \(\rho = 0\), and CUPED does not reduce variance.
+If $X$ and $Y$ are uncorrelated, then $\rho = 0$, and CUPED does not reduce variance.
 
-If \(X\) and \(Y\) are highly correlated, CUPED can reduce variance substantially.
+If $X$ and $Y$ are highly correlated, CUPED can reduce variance substantially.
 
 For example:
 
@@ -290,9 +290,9 @@ $$
 \theta = \frac{\text{Cov}(Y, X)}{\text{Var}(X)}
 $$
 
-If \(\theta = 1\), CUPED resembles a pre-post difference. But usually \(\theta\) is estimated from the data and may be less than or greater than 1.
+If $\theta = 1$, CUPED resembles a pre-post difference. But usually $\theta$ is estimated from the data and may be less than or greater than 1.
 
-CUPED chooses the adjustment that minimizes variance under a linear relationship between \(X\) and \(Y\).
+CUPED chooses the adjustment that minimizes variance under a linear relationship between $X$ and $Y$.
 
 ## Choosing Covariates
 
@@ -384,7 +384,7 @@ $$
 \bar{Y}_T - \bar{Y}_C
 $$
 
-where \(Y_i\) is experiment-period GMV per user.
+where $Y_i$ is experiment-period GMV per user.
 
 To reduce variance, the team uses last month's GMV per user as a CUPED covariate:
 
@@ -393,7 +393,7 @@ Y_i^{\text{adj}} =
 Y_i - \theta(X_i - \bar{X})
 $$
 
-where \(X_i\) is pre-period GMV per user.
+where $X_i$ is pre-period GMV per user.
 
 If pre-period GMV and experiment-period GMV have correlation 0.6, then the approximate variance reduction is:
 

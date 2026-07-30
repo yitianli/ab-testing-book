@@ -82,9 +82,9 @@ $$
 
 Here:
 
-- \(\tau_A\) is the main effect of experiment A.
-- \(\tau_B\) is the main effect of experiment B.
-- \(\tau_{AB}\) is the interaction effect.
+- $\tau_A$ is the main effect of experiment A.
+- $\tau_B$ is the main effect of experiment B.
+- $\tau_{AB}$ is the interaction effect.
 
 The interaction term asks:
 
@@ -102,10 +102,10 @@ To describe this, define four average outcomes:
 
 |  | B Control | B Treatment |
 |---|---:|---:|
-| A Control | \(Y_{00}\) | \(Y_{01}\) |
-| A Treatment | \(Y_{10}\) | \(Y_{11}\) |
+| A Control | $Y_{00}$ | $Y_{01}$ |
+| A Treatment | $Y_{10}$ | $Y_{11}$ |
 
-Here, \(Y_{ab}\) means the average outcome for users with assignment \(A=a\) and \(B=b\). For example, \(Y_{10}\) is the average outcome for users in A treatment and B control.
+Here, $Y_{ab}$ means the average outcome for users with assignment $A=a$ and $B=b$. For example, $Y_{10}$ is the average outcome for users in A treatment and B control.
 
 A simple way to calculate the interaction is:
 
@@ -398,9 +398,9 @@ Factorial designs are useful when the team believes treatments may interact and 
 
 The cost is sample size. Estimating interactions requires enough observations in each cell. With many factors, the number of cells grows quickly.
 
-For two binary factors, there are \(2^2 = 4\) cells.
+For two binary factors, there are $2^2 = 4$ cells.
 
-For five binary factors, there are \(2^5 = 32\) cells.
+For five binary factors, there are $2^5 = 32$ cells.
 
 This is why factorial designs should be used deliberately. They are powerful when the interaction matters, but expensive when the goal is only to estimate separate main effects.
 
@@ -412,8 +412,8 @@ For two binary experiments A and B:
 
 |  | B Control | B Treatment |
 |---|---:|---:|
-| A Control | \(Y_{00}\) | \(Y_{01}\) |
-| A Treatment | \(Y_{10}\) | \(Y_{11}\) |
+| A Control | $Y_{00}$ | $Y_{01}$ |
+| A Treatment | $Y_{10}$ | $Y_{11}$ |
 
 The effect of A when B is off is:
 
@@ -451,7 +451,7 @@ Y_i
 + \epsilon_i
 $$
 
-The coefficient \(\tau_{AB}\) estimates the interaction.
+The coefficient $\tau_{AB}$ estimates the interaction.
 
 But interaction tests often have low power. A non-significant interaction does not prove there is no interaction. It may simply mean the experiment does not have enough data to detect it.
 

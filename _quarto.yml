@@ -42,8 +42,8 @@ format:
     toc-depth: 3
     number-sections: true
     code-copy: true
+    html-math-method: mathml
     link-external-newwindow: true
 
 execute:
   freeze: auto
-

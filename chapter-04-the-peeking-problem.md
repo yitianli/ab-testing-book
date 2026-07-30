@@ -19,7 +19,7 @@ The most common A/B test is a fixed-horizon test.
 Before the experiment begins, the team decides:
 
 - The primary metric
-- The significance level, such as \(\alpha = 0.05\)
+- The significance level, such as $\alpha = 0.05$
 - The desired power
 - The minimum detectable effect
 - The required sample size
@@ -27,9 +27,9 @@ Before the experiment begins, the team decides:
 
 At the end of the experiment, the team compares treatment and control.
 
-For a two-sided test with \(\alpha = 0.05\), the rule is often:
+For a two-sided test with $\alpha = 0.05$, the rule is often:
 
-> Reject the null hypothesis if \(p < 0.05\).
+> Reject the null hypothesis if $p < 0.05$.
 
 This rule controls the false positive rate under the fixed-horizon design. If the treatment truly has no effect, then the probability of incorrectly declaring a significant effect is 5%.
 
@@ -135,9 +135,9 @@ Pocock-style boundaries use a similar threshold at each look. The early threshol
 
 O'Brien-Fleming-style boundaries are very strict early and become closer to 0.05 near the final look.
 
-For a concrete example, suppose the experiment uses a two-sided test with total \(\alpha = 0.05\) and four equally spaced looks at 25%, 50%, 75%, and 100% of the planned information.
+For a concrete example, suppose the experiment uses a two-sided test with total $\alpha = 0.05$ and four equally spaced looks at 25%, 50%, 75%, and 100% of the planned information.
 
-A group sequential design is usually described in terms of a test statistic \(Z_k\) at look \(k\). Under the null hypothesis, the vector of interim \(Z\)-statistics is correlated because later looks contain much of the same data as earlier looks. If the information fraction at look \(k\) is \(t_k\), then a common approximation is:
+A group sequential design is usually described in terms of a test statistic $Z_k$ at look $k$. Under the null hypothesis, the vector of interim $Z$-statistics is correlated because later looks contain much of the same data as earlier looks. If the information fraction at look $k$ is $t_k$, then a common approximation is:
 
 $$
 \text{Corr}(Z_i, Z_j) =
@@ -159,13 +159,13 @@ For four equally spaced looks, approximate two-sided nominal p-value thresholds 
 | 3 | 75% | 0.05 | 0.018 | 0.019 |
 | 4 | 100% | 0.05 | 0.018 | 0.043 |
 
-The corresponding O'Brien-Fleming-style \(Z\)-boundaries are approximately:
+The corresponding O'Brien-Fleming-style $Z$-boundaries are approximately:
 
 $$
 b_k = \frac{2.024}{\sqrt{t_k}}
 $$
 
-So for \(t = 0.25, 0.50, 0.75, 1.00\), the \(Z\)-boundaries are about:
+So for $t = 0.25, 0.50, 0.75, 1.00$, the $Z$-boundaries are about:
 
 $$
 4.05,\quad 2.86,\quad 2.34,\quad 2.02
@@ -251,9 +251,9 @@ A = \frac{1-\beta}{\alpha},\quad
 B = \frac{\beta}{1-\alpha}
 $$
 
-If \(\Lambda_t \ge A\), stop and reject \(H_0\). If \(\Lambda_t \le B\), stop for \(H_0\). Otherwise, continue collecting data.
+If $\Lambda_t \ge A$, stop and reject $H_0$. If $\Lambda_t \le B$, stop for $H_0$. Otherwise, continue collecting data.
 
-For example, with \(\alpha = 0.05\) and \(\beta = 0.20\):
+For example, with $\alpha = 0.05$ and $\beta = 0.20$:
 
 $$
 A = \frac{0.80}{0.05} = 16,\quad
@@ -270,7 +270,7 @@ An always-valid p-value is designed so that optional stopping does not break Typ
 
 The decision rule can be simple:
 
-> Stop for success the first time the always-valid p-value is below \(\alpha\).
+> Stop for success the first time the always-valid p-value is below $\alpha$.
 
 The difference from ordinary p-values is that this rule remains valid even if the team checks the result many times. The p-value process is constructed to account for repeated monitoring.
 
@@ -285,7 +285,7 @@ Only the second one should be used for optional stopping.
 
 A confidence sequence is like a confidence interval that is valid across time. Instead of saying, "This interval has 95% coverage at the final planned sample size," it aims to say, "This sequence of intervals maintains coverage even as the sample grows and the analyst looks repeatedly."
 
-For a treatment effect \(\tau\), a 95% confidence sequence gives an interval at each time \(t\):
+For a treatment effect $\tau$, a 95% confidence sequence gives an interval at each time $t$:
 
 $$
 [L_t, U_t]
@@ -299,9 +299,9 @@ $$
 
 A practical decision rule might be:
 
-- Stop for success if \(L_t > 0\)
-- Stop for harm if \(U_t < 0\)
-- Stop for practical success if \(L_t\) is above the minimum meaningful effect
+- Stop for success if $L_t > 0$
+- Stop for harm if $U_t < 0$
+- Stop for practical success if $L_t$ is above the minimum meaningful effect
 - Continue if the interval still overlaps the decision boundary
 
 Confidence sequences are especially useful when the team wants to see an uncertainty interval over time, not just a stop-or-continue signal.
@@ -322,9 +322,9 @@ $$
 
 This means a valid stopping rule is:
 
-> Stop and reject the null if \(E_t \ge 1/\alpha\).
+> Stop and reject the null if $E_t \ge 1/\alpha$.
 
-For \(\alpha = 0.05\), the threshold is:
+For $\alpha = 0.05$, the threshold is:
 
 $$
 \frac{1}{0.05} = 20
@@ -351,7 +351,7 @@ In a Bayesian experiment, the team starts with a prior belief about the treatmen
 
 Instead of asking:
 
-> Is \(p < 0.05\)?
+> Is $p < 0.05$?
 
 a Bayesian analysis might ask:
 
@@ -371,11 +371,11 @@ But Bayesian monitoring still needs a predefined decision rule.
 
 For example:
 
-> Stop and launch if \(P(\text{lift} > 0) > 99\%\) and the expected loss from launching is below a business threshold.
+> Stop and launch if $P(\text{lift} > 0) > 99\%$ and the expected loss from launching is below a business threshold.
 
 or:
 
-> Stop for harm if \(P(\text{guardrail degradation} > 1\%) > 95\%\).
+> Stop for harm if $P(\text{guardrail degradation} > 1\%) > 95\%$.
 
 Without a clear rule, Bayesian dashboards can still encourage unstable decisions. The team may keep checking until the posterior probability looks attractive, then stop. That may be acceptable under a Bayesian decision framework if the rule is well-defined, but it may not satisfy a company that wants frequentist false positive guarantees.
 
@@ -463,10 +463,10 @@ With an O'Brien-Fleming-style design, the approximate two-sided p-value threshol
 
 | Look | Day | Information Fraction | Stop-for-Success Threshold |
 |---:|---:|---:|---:|
-| 1 | 7 | 25% | \(p < 0.00005\) |
-| 2 | 14 | 50% | \(p < 0.004\) |
-| 3 | 21 | 75% | \(p < 0.019\) |
-| 4 | 28 | 100% | \(p < 0.043\) |
+| 1 | 7 | 25% | $p < 0.00005$ |
+| 2 | 14 | 50% | $p < 0.004$ |
+| 3 | 21 | 75% | $p < 0.019$ |
+| 4 | 28 | 100% | $p < 0.043$ |
 
 Under this design, a day-7 p-value of 0.03 would not justify stopping for success, even though it is below 0.05. The early evidence must be much stronger because the experiment has several chances to stop.
 

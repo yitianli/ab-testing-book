@@ -185,7 +185,7 @@ $$
 h(\text{user_id}_i, \text{experiment_id}) \bmod B
 $$
 
-where \(B\) is the number of available buckets. If \(B = 10{,}000\), then each bucket represents roughly 0.01% of eligible users.
+where $B$ is the number of available buckets. If $B = 10{,}000$, then each bucket represents roughly 0.01% of eligible users.
 
 Hash-based assignment has several advantages:
 
@@ -348,11 +348,11 @@ $$
 
 Where:
 
-- \(n\) is the required sample size per group
-- \(\sigma^2\) is the metric variance
-- \(\delta\) is the minimum detectable effect in absolute units
-- \(z_{1-\alpha/2}\) comes from the significance level
-- \(z_{1-\beta}\) comes from the desired power
+- $n$ is the required sample size per group
+- $\sigma^2$ is the metric variance
+- $\delta$ is the minimum detectable effect in absolute units
+- $z_{1-\alpha/2}$ comes from the significance level
+- $z_{1-\beta}$ comes from the desired power
 
 For a two-sided test with alpha = 0.05 and power = 80%:
 
@@ -390,7 +390,7 @@ xychart-beta
 
 For a binary metric such as conversion rate, signup rate, or click-through rate, the metric variance is tied to the baseline rate.
 
-If the control conversion rate is \(p_C\), the treatment conversion rate is \(p_T\), and the absolute MDE is:
+If the control conversion rate is $p_C$, the treatment conversion rate is $p_T$, and the absolute MDE is:
 
 $$
 \delta = p_T - p_C
@@ -402,13 +402,13 @@ $$
 n \approx \frac{(z_{1-\alpha/2} + z_{1-\beta})^2[p_C(1-p_C) + p_T(1-p_T)]}{\delta^2}
 $$
 
-When the expected effect is small, \(p_T\) is close to \(p_C\), so a simpler approximation is:
+When the expected effect is small, $p_T$ is close to $p_C$, so a simpler approximation is:
 
 $$
 n \approx \frac{2(z_{1-\alpha/2} + z_{1-\beta})^2p(1-p)}{\delta^2}
 $$
 
-where \(p\) is the baseline conversion rate.
+where $p$ is the baseline conversion rate.
 
 For example, suppose:
 

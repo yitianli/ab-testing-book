@@ -32,7 +32,7 @@ $$
 
 the probability of a false positive is 5%.
 
-Now suppose the team tests 20 independent metrics, each at \(\alpha = 0.05\). The probability of seeing at least one false positive is:
+Now suppose the team tests 20 independent metrics, each at $\alpha = 0.05$. The probability of seeing at least one false positive is:
 
 $$
 1 - (1 - 0.05)^{20}
@@ -75,7 +75,7 @@ That set is the family that needs error control.
 
 The simplest multiple testing correction is Bonferroni.
 
-If the team runs \(m\) tests and wants the family-wise error rate to be at most \(\alpha\), Bonferroni tests each individual hypothesis at:
+If the team runs $m$ tests and wants the family-wise error rate to be at most $\alpha$, Bonferroni tests each individual hypothesis at:
 
 $$
 \frac{\alpha}{m}
@@ -95,7 +95,7 @@ $$
 
 The Bonferroni rule is:
 
-> Declare a result significant only if \(p_i \le \alpha/m\).
+> Declare a result significant only if $p_i \le \alpha/m$.
 
 Bonferroni is easy to understand and works under very general conditions. It does not require tests to be independent.
 
@@ -107,7 +107,7 @@ Holm's method is a step-down version of Bonferroni. It also controls the family-
 
 The procedure is:
 
-1. Sort the \(m\) p-values from smallest to largest:
+1. Sort the $m$ p-values from smallest to largest:
 
 $$
 p_{(1)} \le p_{(2)} \le \cdots \le p_{(m)}
@@ -125,7 +125,7 @@ $$
 \frac{\alpha}{m-1}
 $$
 
-4. Continue this way. At rank \(k\), compare:
+4. Continue this way. At rank $k$, compare:
 
 $$
 p_{(k)} \le \frac{\alpha}{m-k+1}
@@ -139,7 +139,7 @@ $$
 0.003,\quad 0.012,\quad 0.020,\quad 0.041,\quad 0.20
 $$
 
-With \(\alpha = 0.05\), Holm compares:
+With $\alpha = 0.05$, Holm compares:
 
 | Rank | P-Value | Threshold |
 |---:|---:|---:|
@@ -171,23 +171,23 @@ The most common FDR method is Benjamini-Hochberg.
 
 ## Benjamini-Hochberg Procedure
 
-Benjamini-Hochberg controls FDR at a chosen level \(q\), such as 0.05 or 0.10.
+Benjamini-Hochberg controls FDR at a chosen level $q$, such as 0.05 or 0.10.
 
 The procedure is:
 
-1. Sort the \(m\) p-values:
+1. Sort the $m$ p-values:
 
 $$
 p_{(1)} \le p_{(2)} \le \cdots \le p_{(m)}
 $$
 
-2. Find the largest rank \(k\) such that:
+2. Find the largest rank $k$ such that:
 
 $$
 p_{(k)} \le \frac{k}{m}q
 $$
 
-3. Declare \(p_{(1)}, \ldots, p_{(k)}\) significant.
+3. Declare $p_{(1)}, \ldots, p_{(k)}$ significant.
 
 For example, suppose ten segment tests have p-values:
 
@@ -195,9 +195,9 @@ $$
 0.002,\ 0.006,\ 0.011,\ 0.018,\ 0.029,\ 0.041,\ 0.090,\ 0.20,\ 0.40,\ 0.70
 $$
 
-With \(q = 0.10\), the Benjamini-Hochberg thresholds are:
+With $q = 0.10$, the Benjamini-Hochberg thresholds are:
 
-| Rank | P-Value | Threshold \((k/m)q\) |
+| Rank | P-Value | Threshold $(k/m)q$ |
 |---:|---:|---:|
 | 1 | 0.002 | 0.010 |
 | 2 | 0.006 | 0.020 |
@@ -244,7 +244,7 @@ Both can be useful. They should not be presented as the same level of evidence.
 
 Guardrails create a subtle multiple testing problem.
 
-Suppose an experiment has one primary metric and twelve guardrails. If one guardrail shows a significant degradation at \(p < 0.05\), is that enough to block launch?
+Suppose an experiment has one primary metric and twelve guardrails. If one guardrail shows a significant degradation at $p < 0.05$, is that enough to block launch?
 
 The answer depends on context.
 
@@ -275,7 +275,7 @@ Suppose a team tests four onboarding flows:
 - Variant B
 - Variant C
 
-If each variant is compared with control at \(\alpha = 0.05\), the chance of at least one false positive increases.
+If each variant is compared with control at $\alpha = 0.05$, the chance of at least one false positive increases.
 
 If the goal is to choose any winning variant against control, the comparisons form a family.
 
@@ -361,12 +361,12 @@ $$
 
 where:
 
-- \(T_i\) is treatment assignment
-- \(S_i\) is a segment indicator
-- \(T_i \times S_i\) is the interaction
-- \(\delta\) measures whether the treatment effect differs by segment
+- $T_i$ is treatment assignment
+- $S_i$ is a segment indicator
+- $T_i \times S_i$ is the interaction
+- $\delta$ measures whether the treatment effect differs by segment
 
-The segment difference is tested through \(\delta\), not by checking whether one segment has \(p < 0.05\) and another segment has \(p > 0.05\).
+The segment difference is tested through $\delta$, not by checking whether one segment has $p < 0.05$ and another segment has $p > 0.05$.
 
 This distinction matters because one segment may be noisier or smaller than another. A result can be significant in one group and not significant in another even when the estimated effects are similar.
 
@@ -408,10 +408,10 @@ Suppose a video app tests a new recommendation algorithm. The pre-specified prim
 The result is:
 
 - 7-day retention: no significant change
-- Watch time: +3%, \(p = 0.03\)
-- Completion rate: +2%, \(p = 0.04\)
+- Watch time: +3%, $p = 0.03$
+- Completion rate: +2%, $p = 0.04$
 - Like rate: no significant change
-- Reported content: +5%, \(p = 0.06\)
+- Reported content: +5%, $p = 0.06$
 - Other metrics: no clear movement
 
 If the team treats every metric as a possible launch metric, the watch-time and completion-rate p-values are less convincing because many metrics were checked.

@@ -113,7 +113,7 @@ If the experiment randomizes users, the safest principle is:
 
 For user-level randomization, this means aggregating clicks and impressions by user first.
 
-For each user \(i\):
+For each user $i$:
 
 $$
 \text{CTR}_i = \frac{\text{Clicks}_i}{\text{Impressions}_i}
@@ -178,7 +178,7 @@ There are three common ways to estimate uncertainty for ratio metrics.
 
 The user-level bootstrap is often the easiest method to explain and implement.
 
-Suppose each user has a numerator \(X_i\), such as clicks, and a denominator \(Y_i\), such as impressions. To estimate uncertainty for overall CTR:
+Suppose each user has a numerator $X_i$, such as clicks, and a denominator $Y_i$, such as impressions. To estimate uncertainty for overall CTR:
 
 $$
 \widehat{R} = \frac{\sum_i X_i}{\sum_i Y_i}
@@ -198,7 +198,7 @@ The bootstrap is flexible and works well for skewed metrics, but it can be compu
 
 The delta method gives an analytic approximation for the variance of a ratio.
 
-Again let \(X_i\) be the numerator and \(Y_i\) be the denominator for user \(i\). The ratio of means is:
+Again let $X_i$ be the numerator and $Y_i$ be the denominator for user $i$. The ratio of means is:
 
 $$
 \widehat{R} = \frac{\bar{X}}{\bar{Y}}
@@ -210,7 +210,7 @@ $$
 \bar{X} = \frac{1}{n}\sum_i X_i,\quad \bar{Y} = \frac{1}{n}\sum_i Y_i
 $$
 
-The approximate variance of \(\widehat{R}\) is:
+The approximate variance of $\widehat{R}$ is:
 
 $$
 \text{Var}(\widehat{R}) \approx
@@ -254,7 +254,7 @@ $$
 \text{Clicked}_{ij} = \alpha + \tau \text{Treatment}_i + \epsilon_{ij}
 $$
 
-where \(j\) indexes impressions for user \(i\).
+where $j$ indexes impressions for user $i$.
 
 The problem is that impressions from the same user are usually correlated. A user who tends to click more may click more across many impressions. If the analysis ignores this correlation, the standard error can be too small and the experiment can look more precise than it really is.
 
