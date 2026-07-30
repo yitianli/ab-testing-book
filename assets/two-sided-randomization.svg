@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" role="img" aria-labelledby="title desc">
+  <title id="title">Two-sided randomization matrix</title>
+  <desc id="desc">A two by two matrix showing control and treatment customers crossed with control and treatment listings. The four cells are Q00, Q01, Q10, and Q11, with booking marks and displacement arrows.</desc>
+  <defs>
+    <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#4c78a8"/>
+    </marker>
+    <style>
+      .axis-label { font: 700 18px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #344054; }
+      .small-label { font: 600 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475467; }
+      .cell-label { font: italic 700 28px Georgia, "Times New Roman", serif; fill: #2f6f9f; }
+      .legend { font: 500 15px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #475467; }
+      .booking { stroke: #344054; stroke-width: 8; stroke-linecap: round; opacity: 0.92; }
+      .booking-muted { stroke: #344054; stroke-width: 8; stroke-linecap: round; opacity: 0.28; }
+      .blue-person { stroke: #4c78a8; fill: #4c78a8; }
+      .green-person { stroke: #59a14f; fill: #59a14f; }
+    </style>
+  </defs>
+
+  <rect width="900" height="560" fill="#ffffff"/>
+
+  <!-- Axis labels -->
+  <text x="84" y="250" class="axis-label" transform="rotate(-90 84 250)">Customers</text>
+  <text x="478" y="58" text-anchor="middle" class="axis-label">Listings</text>
+
+  <!-- Column icons and labels -->
+  <g transform="translate(330 68)">
+    <circle cx="0" cy="0" r="10" class="blue-person"/>
+    <path d="M0 12 L0 44 M-18 27 L18 27 M-11 68 L0 44 L11 68" fill="none" class="blue-person" stroke-width="6" stroke-linecap="round"/>
+    <text x="0" y="94" text-anchor="middle" class="small-label">Control</text>
+  </g>
+  <g transform="translate(625 68)">
+    <circle cx="0" cy="0" r="10" class="green-person"/>
+    <path d="M0 12 L0 44 M-18 27 L18 27 M-11 68 L0 44 L11 68" fill="none" class="green-person" stroke-width="6" stroke-linecap="round"/>
+    <text x="0" y="94" text-anchor="middle" class="small-label">Treatment</text>
+  </g>
+
+  <!-- Row icons and labels -->
+  <g transform="translate(112 220)">
+    <circle cx="0" cy="0" r="10" class="blue-person"/>
+    <path d="M0 12 L0 44 M-18 27 L18 27 M-11 68 L0 44 L11 68" fill="none" class="blue-person" stroke-width="6" stroke-linecap="round"/>
+    <text x="0" y="94" text-anchor="middle" class="small-label">Control</text>
+  </g>
+  <g transform="translate(112 365)">
+    <circle cx="0" cy="0" r="10" class="green-person"/>
+    <path d="M0 12 L0 44 M-18 27 L18 27 M-11 68 L0 44 L11 68" fill="none" class="green-person" stroke-width="6" stroke-linecap="round"/>
+    <text x="0" y="94" text-anchor="middle" class="small-label">Treatment</text>
+  </g>
+
+  <!-- Matrix cells -->
+  <g transform="translate(185 150)">
+    <rect x="0" y="0" width="280" height="145" fill="#dcecf8" stroke="#667085" stroke-width="2"/>
+    <rect x="280" y="0" width="280" height="145" fill="#dcecf8" stroke="#667085" stroke-width="2"/>
+    <rect x="0" y="145" width="280" height="145" fill="#dcecf8" stroke="#667085" stroke-width="2"/>
+    <rect x="280" y="145" width="280" height="145" fill="#dff0d8" stroke="#667085" stroke-width="2"/>
+
+    <text x="24" y="40" class="cell-label">Q<tspan baseline-shift="sub" font-size="18">00</tspan></text>
+    <text x="304" y="40" class="cell-label">Q<tspan baseline-shift="sub" font-size="18">01</tspan></text>
+    <text x="24" y="185" class="cell-label">Q<tspan baseline-shift="sub" font-size="18">10</tspan></text>
+    <text x="304" y="185" class="cell-label">Q<tspan baseline-shift="sub" font-size="18">11</tspan></text>
+
+    <!-- Booking marks: Q00 -->
+    <g class="booking" transform="translate(95 76)">
+      <line x1="-10" y1="-10" x2="10" y2="10"/>
+      <line x1="10" y1="-10" x2="-10" y2="10"/>
+    </g>
+    <g class="booking" transform="translate(170 76)">
+      <line x1="-10" y1="-10" x2="10" y2="10"/>
+      <line x1="10" y1="-10" x2="-10" y2="10"/>
+    </g>
+
+    <!-- Booking marks: Q01 -->
+    <g class="booking" transform="translate(375 76)">
+      <line x1="-10" y1="-10" x2="10" y2="10"/>
+      <line x1="10" y1="-10" x2="-10" y2="10"/>
+    </g>
+    <g class="booking-muted" transform="translate(445 76)">
+      <line x1="-10" y1="-10" x2="10" y2="10"/>
+      <line x1="10" y1="-10" x2="-10" y2="10"/>
+    </g>
+
+    <!-- Booking marks: Q10 -->
+    <g class="booking" transform="translate(95 221)">
+      <line x1="-10" y1="-10" x2="10" y2="10"/>
+      <line x1="10" y1="-10" x2="-10" y2="10"/>
+    </g>
+    <g class="booking-muted" transform="translate(170 221)">
+      <line x1="-10" y1="-10" x2="10" y2="10"/>
+      <line x1="10" y1="-10" x2="-10" y2="10"/>
+    </g>
+
+    <!-- Booking marks: Q11 -->
+    <g class="booking" transform="translate(370 221)">
+      <line x1="-10" y1="-10" x2="10" y2="10"/>
+      <line x1="10" y1="-10" x2="-10" y2="10"/>
+    </g>
+    <g class="booking" transform="translate(430 221)">
+      <line x1="-10" y1="-10" x2="10" y2="10"/>
+      <line x1="10" y1="-10" x2="-10" y2="10"/>
+    </g>
+    <g class="booking" transform="translate(490 221)">
+      <line x1="-10" y1="-10" x2="10" y2="10"/>
+      <line x1="10" y1="-10" x2="-10" y2="10"/>
+    </g>
+    <g class="booking" transform="translate(535 180)">
+      <line x1="-10" y1="-10" x2="10" y2="10"/>
+      <line x1="10" y1="-10" x2="-10" y2="10"/>
+    </g>
+
+    <!-- Displacement arrows -->
+    <path d="M445 95 C465 125, 495 135, 535 165" fill="none" stroke="#4c78a8" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow-blue)"/>
+    <path d="M190 221 C240 238, 295 235, 350 222" fill="none" stroke="#4c78a8" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow-blue)"/>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(306 498)">
+    <g class="booking" transform="translate(0 0) scale(0.8)">
+      <line x1="-10" y1="-10" x2="10" y2="10"/>
+      <line x1="10" y1="-10" x2="-10" y2="10"/>
+    </g>
+    <text x="28" y="5" class="legend">denotes bookings made</text>
+    <line x1="230" y1="0" x2="285" y2="0" stroke="#4c78a8" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow-blue)"/>
+    <text x="305" y="5" class="legend">shows displacement</text>
+  </g>
+</svg>

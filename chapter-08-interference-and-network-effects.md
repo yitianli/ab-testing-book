@@ -898,7 +898,7 @@ In this design:
 - Listings are assigned to control or treatment
 - Each guest-listing interaction falls into one of four cells
 
-![Two-sided randomization creates four customer-listing interaction cells.](assets/two-sided-randomization.png)
+![Two-sided randomization creates four customer-listing interaction cells.](assets/two-sided-randomization.svg)
 
 |  | Control Listings | Treatment Listings |
 |---|---:|---:|
