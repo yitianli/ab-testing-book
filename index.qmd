@@ -2,6 +2,17 @@
 number-sections: false
 ---
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (document.getElementById("beyond-simple-ab-tests")) {
+    var titleBlock = document.getElementById("title-block-header");
+    if (titleBlock) {
+      titleBlock.remove();
+    }
+  }
+});
+</script>
+
 # Beyond Simple A/B Tests {.unnumbered}
 
 *A Practical Guide to Modern Experimentation*

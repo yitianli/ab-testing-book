@@ -32,7 +32,3 @@ figcaption {
   color: #6b7280;
   font-size: 0.9rem;
 }
-
-body:has(#beyond-simple-ab-tests) #title-block-header {
-  display: none;
-}
