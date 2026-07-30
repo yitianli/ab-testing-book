@@ -1,0 +1,49 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "Beyond Simple A/B Tests"
+  subtitle: "A Practical Guide to Modern Experimentation"
+  author: "Yitian Li"
+  chapters:
+    - index.qmd
+    - part: "Part I: Foundations"
+      chapters:
+        - chapter-01-what-are-we-really-testing.md
+        - chapter-02-designing-a-clean-experiment.md
+        - chapter-03-metrics-are-not-just-numbers.md
+    - part: "Part II: Inference Problems"
+      chapters:
+        - chapter-04-the-peeking-problem.md
+        - chapter-05-variance-reduction.md
+        - chapter-06-multiple-testing.md
+    - part: "Part III: Real-World Experiment Complications"
+      chapters:
+        - chapter-07-triggered-analysis-and-noncompliance.md
+        - chapter-08-interference-and-network-effects.md
+        - chapter-09-concurrent-experiments.md
+    - part: "Part IV: Learning Beyond the Average"
+      chapters:
+        - chapter-10-heterogeneous-treatment-effects.md
+        - chapter-11-long-term-effects-and-holdouts.md
+        - chapter-12-bandits-and-adaptive-experiments.md
+  page-footer:
+    left: "Beyond Simple A/B Tests"
+    right: "Built with Quarto"
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    css: styles.css
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-copy: true
+    link-external-newwindow: true
+
+execute:
+  freeze: auto
+

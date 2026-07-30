@@ -1,0 +1,35 @@
+/* Keep the book readable without making the site feel heavy. */
+
+body {
+  line-height: 1.65;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: 0;
+}
+
+.sidebar-title {
+  font-weight: 700;
+}
+
+.content {
+  max-width: 860px;
+}
+
+blockquote {
+  border-left: 4px solid #4f8cc9;
+  color: #374151;
+  padding: 0.25rem 1rem;
+}
+
+table {
+  font-size: 0.95rem;
+}
+
+figcaption {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+

@@ -1,0 +1,43 @@
+---
+number-sections: false
+---
+
+# Beyond Simple A/B Tests {.unnumbered}
+
+*A Practical Guide to Modern Experimentation*
+
+This book is a practical guide to modern A/B testing.
+
+It starts from the basic structure of a clean experiment, then moves into the problems that appear in real product systems: ratio metrics, peeking, variance reduction, multiple testing, noncompliance, interference, concurrent experiments, heterogeneous treatment effects, long-term holdouts, and adaptive experiments.
+
+The goal is not only to explain statistical methods. The goal is to build product judgment: how to translate a business question into an experiment, how to choose metrics, how to detect when a result is misleading, and how to make a decision when the data is useful but imperfect.
+
+## How to Read This Book
+
+The chapters are arranged in five parts.
+
+### Part I: Foundations
+
+The first part explains what an experiment is really testing. It covers hypotheses, treatment effects, randomization, sample size, duration, and metric design.
+
+### Part II: Inference Problems
+
+The second part focuses on statistical problems that often appear even when the experiment itself is randomized: peeking, variance reduction, and multiple testing.
+
+### Part III: Real-World Experiment Complications
+
+The third part discusses issues that appear in production systems: triggered analysis, noncompliance, interference, network effects, and overlapping experiments.
+
+### Part IV: Learning Beyond the Average
+
+The fourth part moves beyond the average treatment effect. It covers heterogeneous effects, long-term effects, holdouts, and adaptive experiments.
+
+### Part V: When Randomization Is Hard
+
+The final part is planned for later chapters. It will cover quasi-experiments, experiment quality checks, and launch decisions.
+
+## Planned Chapters
+
+- Chapter 13: Quasi-Experiments
+- Chapter 14: Experiment Quality Checks
+- Chapter 15: From Result to Decision
