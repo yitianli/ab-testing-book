@@ -76,15 +76,23 @@ Metric tradeoffs, guardrail violations, rollout strategy, and how to make a laun
 
 ## Website
 
-This book is set up as a Quarto book website.
+The published book website is here:
 
-To preview it locally after installing Quarto:
+[https://yitianli.github.io/ab-testing-book/](https://yitianli.github.io/ab-testing-book/)
+
+The source repository is here:
+
+[https://github.com/yitianli/ab-testing-book](https://github.com/yitianli/ab-testing-book)
+
+This book is built with Quarto and published with GitHub Pages through GitHub Actions.
+
+To preview the book locally:
 
 ```bash
 quarto preview
 ```
 
-To render the static site:
+To render the static site locally:
 
 ```bash
 quarto render
@@ -92,10 +100,10 @@ quarto render
 
 The rendered website will be created in `_book/`.
 
-To publish with GitHub Pages:
+To update the published website:
 
-1. Create a GitHub repository for this folder.
-2. Push the book files to the repository.
-3. In GitHub, go to `Settings > Pages`.
-4. Set the source to `GitHub Actions`.
-5. Push to `main` or run the `Publish Quarto Book` workflow manually.
+1. Edit the Markdown or Quarto source files.
+2. Commit the changes.
+3. Push to `main`.
+
+GitHub Actions will rebuild and publish the website automatically.
