@@ -17,6 +17,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 *A Practical Guide to Modern Experimentation*
 
+**Author:** Yitian Li
+
 This book is a practical guide to modern A/B testing.
 
 It starts from the basic structure of a clean experiment, then moves into the problems that appear in real product systems: ratio metrics, peeking, variance reduction, multiple testing, noncompliance, interference, concurrent experiments, heterogeneous treatment effects, long-term holdouts, and adaptive experiments.
