@@ -32,55 +32,6 @@ The central distinction is:
 
 > A/B tests are usually designed for clean measurement. Bandits are usually designed for learning while optimizing.
 
-## The Basic Bandit Problem
-
-The name comes from the idea of several slot machines, sometimes called "one-armed bandits." Each machine has an unknown payout rate. The player wants to earn as much reward as possible while learning which machine is best.
-
-In product experimentation:
-
-- Each machine is a variant.
-- Pulling an arm means assigning a user, session, impression, or request to a variant.
-- The reward is the observed outcome, such as click, purchase, revenue, or retention proxy.
-
-The challenge is that the platform faces two goals at the same time:
-
-**Exploration**
-
-Try different variants to learn their performance.
-
-**Exploitation**
-
-Send more traffic to the variant that currently looks best.
-
-Pure exploration learns well but may waste traffic on bad variants. Pure exploitation earns more short-term reward but may get stuck on a variant that looked good early by chance.
-
-Bandit algorithms manage this tradeoff.
-
-## Regret
-
-Regret measures the cost of not always choosing the best variant.
-
-Suppose the best variant has expected reward $\mu^*$, and the algorithm chooses variant $A_t$ at time $t$ with expected reward $\mu_{A_t}$.
-
-The expected regret after $T$ assignments is:
-
-$$
-R_T
-=
-\sum_{t=1}^{T}
-(\mu^* - \mu_{A_t})
-$$
-
-In words:
-
-> Regret is the reward lost because the algorithm sometimes chose a non-best option.
-
-For a fixed A/B test, regret can be high because the experiment keeps assigning traffic to weak variants at the planned rate.
-
-For a bandit, regret can be lower because the algorithm shifts traffic toward better variants as evidence accumulates.
-
-This is the main reason bandits are attractive in product settings where every assignment has business cost.
-
 ## A/B Tests and Bandits Answer Different Questions
 
 A standard A/B test usually asks:
@@ -110,6 +61,84 @@ A bandit is often better when the goal is adaptive optimization:
 - Reduce traffic sent to weak options
 
 The difference matters because adaptive allocation changes the data distribution. Later users are more likely to receive variants that looked good earlier. This can complicate inference if the team tries to analyze the bandit as if it were a fixed A/B test.
+
+## The Basic Bandit Problem
+
+The name comes from the idea of several slot machines, sometimes called "one-armed bandits." Each machine has an unknown payout rate. The player can pull only one arm at a time, observe the payout, and then decide which arm to pull next.
+
+The goal is not just to identify the best machine at the end. The goal is to earn as much reward as possible while learning. This is what makes bandits different from fixed A/B tests. A fixed A/B test is usually willing to spend traffic evenly across variants in order to measure them cleanly. A bandit changes allocation as evidence arrives.
+
+In a product setting, the mapping is:
+
+| Bandit Term | Product Meaning |
+|---|---|
+| Arm | Variant, message, ranking rule, creative, or policy |
+| Pulling an arm | Assigning a user, session, impression, or request to a variant |
+| Reward | The outcome signal the algorithm tries to maximize |
+| Policy | The rule that decides which variant receives the next assignment |
+
+The reward is central. It is the feedback signal used by the algorithm after each assignment. If the reward is binary, it may be $Y_t = 1$ for a click and $Y_t = 0$ for no click. If the reward is continuous, it may be revenue, order value, watch time, or predicted long-term value.
+
+For variant $a$, the expected reward is often written as:
+
+$$
+\mu_a = E[Y \mid A=a]
+$$
+
+This means the average reward we would expect if variant $a$ were chosen. A bandit algorithm does not know $\mu_a$ in advance. It estimates it from observed outcomes and uses those estimates to decide where to send future traffic.
+
+Choosing the reward is therefore a product decision, not just a statistical detail. The reward should be fast enough for the algorithm to learn from, but it should also be aligned with real product value.
+
+Examples:
+
+| Product Setting | Possible Reward |
+|---|---|
+| Notification copy | Open within one hour |
+| Search ranking | Click, purchase, or revenue after a search |
+| Ad creative | Conversion or revenue per impression |
+| Subscription onboarding | Trial start, paid conversion, or predicted LTV |
+| Recommendation system | Watch time, purchase value, or long-term engagement proxy |
+
+This choice can be dangerous if the reward is too narrow. A notification bandit that optimizes opens may learn to send clickbait messages. A subscription bandit that optimizes trial starts may attract users who do not convert to paid subscribers. A commerce bandit that optimizes short-term revenue may harm retention or trust.
+
+Once the reward is defined, the bandit faces two goals at the same time:
+
+**Exploration**
+
+Try variants to learn their reward distributions.
+
+**Exploitation**
+
+Send more traffic to variants that currently look better.
+
+Pure exploration learns well but may waste traffic on bad variants. Pure exploitation earns more short-term reward but may get stuck on a variant that looked good early by chance.
+
+Bandit algorithms are different ways to manage this exploration-exploitation tradeoff.
+
+## Regret
+
+Regret measures the cost of not always choosing the best variant.
+
+Suppose the best variant has expected reward $\mu^*$, and the algorithm chooses variant $A_t$ at time $t$ with expected reward $\mu_{A_t}$.
+
+The expected regret after $T$ assignments is:
+
+$$
+R_T
+=
+\sum_{t=1}^{T}
+(\mu^* - \mu_{A_t})
+$$
+
+In words:
+
+> Regret is the reward lost because the algorithm sometimes chose a non-best option.
+
+For a fixed A/B test, regret can be high because the experiment keeps assigning traffic to weak variants at the planned rate.
+
+For a bandit, regret can be lower because the algorithm shifts traffic toward better variants as evidence accumulates.
+
+This is the main reason bandits are attractive in product settings where every assignment has business cost.
 
 ## Epsilon-Greedy
 
@@ -146,7 +175,7 @@ The algorithm gives each variant a score:
 $$
 \text{UCB}_a
 =
-\hat{\mu}_a
+\widehat{\mu}_a
 +
 c
 \sqrt{
@@ -156,7 +185,7 @@ $$
 
 where:
 
-- $\hat{\mu}_a$ is the observed average reward for variant $a$
+- $\widehat{\mu}_a$ is the observed average reward for variant $a$
 - $n_a$ is the number of times variant $a$ has been tried
 - $t$ is the total number of assignments so far
 - $c$ controls how much the algorithm values exploration
@@ -225,25 +254,33 @@ For example:
 - A recommendation module may work better for returning users than new users.
 - A creative message may work differently by country or device.
 
-A contextual bandit uses features $X_i$ when choosing the action.
+A standard bandit learns which variant performs best on average. A contextual bandit learns which variant performs best for a given context.
 
-Instead of learning:
+The context $X_i$ contains information available before assignment, such as user type, device, country, time of day, product category, or past behavior.
+
+Without context, the algorithm estimates:
 
 $$
 E[Y \mid A=a]
 $$
 
-it learns:
+This is the average reward if variant $a$ is chosen.
+
+With context, the algorithm estimates:
 
 $$
 E[Y \mid A=a, X=x]
 $$
 
-The policy becomes:
+This is the average reward if variant $a$ is chosen for users or situations with context $x$.
+
+The policy is then written as:
 
 $$
 \pi(x) = \text{action chosen for context }x
 $$
+
+In words, the policy looks at the current context and chooses the variant that appears best for that context.
 
 This connects bandits to HTE and uplift modeling from Chapter 10. Both are concerned with treatment effects that vary by user, item, or context.
 

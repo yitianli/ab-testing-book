@@ -1,88 +1,42 @@
 # Designing a Clean Experiment
 
-A good experiment is mostly designed before the first user enters it.
+Chapter 1 explained how to turn a product idea into a decision-ready experiment question. Chapter 2 starts after that point.
 
-Once the data arrives, the analysis may feel like the main event: p-values, confidence intervals, dashboards, and launch decisions. But many experiment failures are already built into the design. If the wrong users enter the test, if treatment and control are not clearly defined, if the randomization unit is unstable, or if the metric does not match the product goal, no statistical method can fully rescue the result later.
+Once the hypothesis is clear, the next question is design:
 
-Clean experiment design starts with a simple question:
+> What experiment would allow us to test this hypothesis credibly?
 
-> What comparison do we want to make, and under what conditions would we trust the answer?
+A good experiment is mostly designed before the first user enters it. Once the data arrives, the analysis may feel like the main event: p-values, confidence intervals, dashboards, and launch decisions. But many experiment failures are already built into the design. If the wrong users enter the test, if treatment and control are not clearly defined, if the randomization unit is unstable, or if exposure is ambiguous, no statistical method can fully rescue the result later.
 
-This chapter walks through the main design choices behind a reliable A/B test.
+The important idea in this chapter is that a hypothesis is not only a statistical statement. It is also a design anchor. It tells the team what treatment must be created, who should enter the experiment, when exposure happens, what unit should be randomized, what metrics should be measured, and what validity checks matter.
 
-## From Product Idea to Hypothesis
+Suppose a food delivery app has the following hypothesis:
 
-A product idea is not yet an experiment.
+> Showing a delivery-time range, such as "25-35 minutes," instead of a point estimate, such as "30 minutes," will reduce post-order cancellations caused by delivery-time uncertainty, without reducing order conversion.
 
-Consider these product ideas:
+This hypothesis already implies most of the design:
 
-- Add one-click checkout
-- Change the recommendation algorithm
-- Show a delivery time range
-- Redesign onboarding
-- Add a discount reminder
+- What treatment and control mean in the product
+- Who is eligible to enter the experiment
+- What counts as exposure
+- What unit is randomized
+- When randomization happens
+- Which metrics and guardrails will be analyzed
+- How much sample size and duration are needed
+- What validity checks should be run before trusting the result
 
-Each idea needs to be translated into a hypothesis.
-
-A weak hypothesis sounds like:
-
-> The new onboarding flow will be better.
-
-A stronger hypothesis sounds like:
-
-> The new onboarding flow will increase trial starts per eligible visitor without reducing paid conversion or 30-day retention.
-
-The stronger version is better because it says what should improve and what should not get worse.
-
-A useful experiment hypothesis usually contains:
-
-- The target population
-- The product change
-- The expected direction of impact
-- The primary outcome
-- The main guardrails
-
-For example:
-
-> Among users viewing checkout, showing a simplified checkout page will increase purchase conversion rate without reducing revenue per visitor or increasing payment errors.
-
-This is now close to a testable experiment.
-
-## Eligibility: Who Enters the Experiment?
-
-Eligibility defines who can be included in the experiment.
-
-This sounds simple, but it is one of the most important design choices. If the experiment includes users who could never experience the treatment, the measured effect will be diluted. If it includes only users who take a post-treatment action, the analysis may be biased.
-
-Suppose a job platform tests a one-click apply button. The feature only works for users who have a saved resume and completed profile. If all job page visitors are included, many users in treatment cannot actually use the new feature. The experiment may underestimate the effect among eligible users.
-
-A cleaner eligibility rule would be:
-
-> Users who view an application page and have enough saved profile information to use one-click apply.
-
-Eligibility should be defined before randomization whenever possible. Defining it after treatment exposure can introduce bias.
-
-Good eligibility rules answer:
-
-- Who can actually receive the treatment?
-- At what moment does a user enter the experiment?
-- Are there users or contexts that should be excluded?
-- Is eligibility based on pre-treatment information?
+The rest of this chapter shows how to turn that hypothesis into a clean experiment design.
 
 ## Treatment and Control
 
-Treatment and control should differ in exactly the intended way.
+The first design question is what exactly changes.
 
-In a clean A/B test:
+In the delivery-time example, the treatment is not simply "a better delivery estimate." That is too vague. The experiment needs a precise comparison:
 
-- Control receives the current experience
-- Treatment receives the new experience
+- Control users see the current point estimate, such as "30 minutes"
+- Treatment users see a delivery-time range, such as "25-35 minutes"
 
-But in real products, the difference may be less clean. A checkout redesign might also change page load time. A recommendation update might change both ranking and content diversity. A notification experiment might change timing, copy, and frequency all at once.
-
-The more things change at the same time, the harder it becomes to interpret the result.
-
-Suppose a food delivery app tests showing delivery time as a range instead of a point estimate. If treatment also changes the color, placement, and wording of the delivery estimate, then a metric movement cannot be attributed only to the range format.
+Treatment and control should differ in exactly the intended way. If treatment also changes the color, placement, wording, or backend estimation model, then the experiment no longer isolates the effect of showing a range instead of a point estimate.
 
 The design question is:
 
@@ -99,9 +53,71 @@ A good experiment document should specify:
 
 This level of detail prevents confusion later, especially when results are surprising.
 
+## Eligibility: Who Enters the Experiment?
+
+Eligibility defines who can enter the experiment population before treatment is assigned.
+
+This sounds simple, but it is one of the most important design choices. Eligibility should usually be based on information that exists before treatment exposure: country, platform, app version, login status, account type, device type, or whether a feature is technically available to the user.
+
+Suppose a food delivery app tests a new delivery-time display, but the feature is available only in cities where the logistics system can provide reliable time ranges. Users outside those cities should not enter the experiment. Including them would dilute the measured effect, because they could never receive the intended treatment.
+
+A cleaner eligibility rule would be:
+
+> Logged-in users in cities where delivery-time ranges are supported, using app versions that can display the new format.
+
+Eligibility should be defined before randomization whenever possible. Defining it after treatment exposure can introduce bias.
+
+Good eligibility rules answer:
+
+- Who can actually receive the treatment?
+- What pre-treatment information determines eligibility?
+- Are there users or contexts that should be excluded?
+- At what moment does an eligible user enter the randomization system?
+
+## Exposure and Triggered Users
+
+Eligibility is not the same as exposure.
+
+A user may be eligible for the experiment but never actually reach the product moment where the treatment could matter. For example:
+
+- A user eligible for a checkout experiment never reaches checkout
+- A user eligible for a recommendation experiment does not open the feed
+- A user eligible for a job application experiment never opens an application page
+- A user eligible for a pricing experiment visits only free pages
+
+This creates two related populations:
+
+**Assigned users**
+
+Users included in the experiment assignment.
+
+**Triggered users**
+
+Users who actually had a chance to experience the treatment.
+
+Analyzing all assigned users gives an intent-to-treat estimate. It answers:
+
+> What is the effect of assigning users to this product experience?
+
+Analyzing triggered users can be more sensitive, because it focuses on users who had a real opportunity to be affected. But it must be done carefully. If triggering is affected by the treatment, analyzing only triggered users can introduce bias.
+
+A good design defines the trigger event in advance.
+
+For example:
+
+> A user enters the checkout experiment when they land on the checkout page.
+
+This is cleaner than assigning all site visitors and later filtering to only those who reached checkout, especially if the treatment could affect whether users reach checkout.
+
+The distinction from eligibility is timing. Eligibility defines who can enter the experiment before treatment exposure. Triggering defines when an assigned user reaches the product moment where treatment could matter.
+
+Before choosing the randomization unit and timing, the team should already know the primary metric. This does not require a full metric plan yet, but it does require knowing where the main outcome sits in the product funnel. A cancellation metric, a conversion metric, and a revenue-per-user metric may imply different assignment timing.
+
 ## Randomization Unit
 
 The randomization unit is the level at which treatment assignment happens.
+
+The hypothesis helps choose the unit because it defines both the treatment and the outcome of interest. In the delivery-time example, the treatment changes the user's experience across restaurant pages, checkout, and possibly order tracking. If the same user saw a point estimate in one session and a range in another, the experience would be confusing and the comparison would be contaminated. User-level randomization is therefore a natural choice.
 
 Common choices include:
 
@@ -115,21 +131,67 @@ Common choices include:
 - City or region
 - Time block
 
-The right unit depends on how the treatment works and how interference might happen.
+In general, the right unit depends on how the treatment works, whose outcome the primary metric measures, whose behavior can be affected, and where the product experience needs to remain stable.
 
 User-level randomization is common because it gives a consistent experience. If a user sees the new checkout page today, they should usually see it again tomorrow. This avoids confusion and contamination.
 
 Session-level randomization may be useful when the experience is short-lived and users rarely return, but it can create inconsistency for returning users.
 
-Item-level or creator-level randomization may be needed when the treatment is attached to content rather than users. For example, if a marketplace tests a new seller badge, randomizing users may mean the same seller appears with a badge to some buyers but not others. Randomizing sellers may be cleaner.
+Item-level or creator-level randomization may be needed when the treatment is attached to content rather than users. For example, if a marketplace tests a new seller badge, the right unit depends on the business question. If the goal is to measure buyer-side outcomes such as GMV per user or purchase conversion, user-level randomization may be reasonable: some buyers see badges and some do not. If the goal is to measure seller-side outcomes such as seller revenue, exposure, or conversion, seller-level randomization is cleaner. Otherwise the same seller may be partially treated, making seller-level outcomes hard to interpret.
 
-Geo-level or time-level randomization is often used when users affect each other, such as in ride-sharing, food delivery, ads auctions, and marketplaces. These cases are discussed later in the book under interference and switchback experiments.
+Geo-level or time-level randomization is often used when individual users are not independent, such as in ride-sharing, food delivery, ad auctions, and marketplaces. Chapter 9 discusses these designs in more detail.
 
 The rule of thumb is:
 
-> Randomize at the lowest level that keeps the treatment stable and avoids major contamination.
+> Choose a randomization unit that matches the treatment, the primary metric, and the level where contamination or interference may occur.
+
+### When Randomization Happens
+
+The randomization unit defines who receives a stable assignment. The randomization timing defines when that assignment is created.
+
+This timing matters because it affects the experiment population.
+
+In the delivery-time example, the team could randomize users at several moments:
+
+- When an eligible user opens the app
+- When an eligible user views a restaurant page
+- When an eligible user enters checkout
+
+Randomizing too early can dilute the effect. If all eligible app users are randomized, many assigned users may never see a delivery estimate. The intent-to-treat estimate is still valid for the population of eligible app users, but it may be much smaller than the effect among users who actually reach the delivery estimate.
+
+Randomizing too late can create bias. If the delivery-time range appears on the restaurant page, but users are randomized only after reaching checkout, the treatment may have already affected who reaches checkout. In that case, the checkout population is partly shaped by the treatment itself.
+
+The practical rule is:
+
+> Randomization should happen before treatment exposure, but as close as practical to the first moment when treatment could affect behavior.
+
+The right timing also depends on the primary metric and where that metric sits in the funnel.
+
+Consider a simplified food ordering funnel:
+
+```text
+Open app -> View restaurant page -> Enter checkout -> Place order -> Cancel or complete order
+```
+
+If the primary metric is post-order cancellation rate, randomizing users when they place an order can make sense. The experiment would answer:
+
+> Among users who placed an order, does showing the delivery-time range reduce cancellation?
+
+But if the primary metric is orders per user, restaurant page to checkout conversion, or GMV per user, randomizing only after order placement would be too late. The treatment may already have affected whether the user continued through the funnel and placed an order. In that case, randomization should happen earlier, before the treatment can affect order creation.
+
+So a more complete rule is:
+
+> Randomization should happen before the earliest point in the funnel where the treatment can affect the primary metric.
+
+For triggered experiments, this means the trigger event should be defined before the experiment starts. In the delivery-time example, a reasonable trigger could be:
+
+> The first time an eligible user views a restaurant page or checkout page where a delivery estimate is shown.
+
+That timing keeps assignment before exposure while avoiding a large population of assigned users who never had a chance to be affected.
 
 ### Hash-Based User Randomization
+
+Once the design chooses user-level assignment, the platform still needs a stable way to implement it.
 
 When the randomization unit is the user, many experimentation systems assign users with a deterministic hash.
 
@@ -155,26 +217,6 @@ else:
 
 This creates a stable 50/50 split. The same user will receive the same assignment every time the experiment is checked, because the hash input does not change.
 
-For a 10% treatment rollout, the assignment could be:
-
-```text
-if bucket < 9000:
-    assignment = "control"
-else:
-    assignment = "treatment"
-```
-
-For a three-arm experiment:
-
-```text
-if bucket < 3333:
-    assignment = "control"
-elif bucket < 6666:
-    assignment = "treatment_a"
-else:
-    assignment = "treatment_b"
-```
-
 The experiment identifier is important. If the platform hashes only `user_id`, then the same users may repeatedly fall into treatment across many experiments. By hashing `user_id` together with `experiment_id`, each experiment gets a fresh random split while keeping assignment stable inside that experiment.
 
 A more general version is:
@@ -182,7 +224,7 @@ A more general version is:
 $$
 \text{bucket}_i
 =
-h(\text{user_id}_i, \text{experiment_id}) \bmod B
+h(\texttt{user\_id}_i, \texttt{experiment\_id}) \bmod B
 $$
 
 where $B$ is the number of available buckets. If $B = 10{,}000$, then each bucket represents roughly 0.01% of eligible users.
@@ -195,82 +237,21 @@ Hash-based assignment has several advantages:
 - It supports gradual rollout by changing which buckets receive treatment.
 - It makes the expected traffic split easy to audit.
 
-For example, a team can start with 5% treatment, then expand to 25%, then 50% by adding more buckets to treatment.
+The implementation details matter because randomization must be stable and auditable. If the identifier changes across sessions, the same user may receive different variants. If assignment happens after exposure, the experiment population may already be selected by post-treatment behavior. If the observed traffic split differs from the planned split, the team should investigate before interpreting results.
 
-However, bucket expansion needs care. If users are moved from control to treatment during the experiment, the meaning of the experiment changes. For a clean A/B test, the assignment rule should usually be fixed before the experiment starts. Gradual rollout is useful for safety monitoring, but the confirmatory analysis should clearly define which users and time periods belong to the final experiment.
-
-There are also common pitfalls.
-
-**Unstable identifiers**
-
-If the user identifier changes across devices, sessions, logout states, or reinstall events, the same person may receive different variants.
-
-For example, randomizing by device ID may be reasonable for a device-specific UI test, but it may be wrong for a subscription experiment where the same user moves across phone, tablet, and desktop.
-
-**Randomizing after exposure**
-
-Assignment should happen before treatment exposure. If the system assigns users only after they click a feature or reach a late funnel step, the experiment population may already be selected by post-treatment behavior.
-
-**Changing the hash rule mid-experiment**
-
-Changing the salt, experiment ID, bucket count, or allocation logic can reshuffle users. This breaks treatment stability and can contaminate the result.
-
-**Correlated assignments across experiments**
-
-If multiple experiments use the same hash input and bucket ranges, the same users may be assigned together across experiments. Experiment-specific salts or identifiers help make assignments independent across experiments.
-
-**Ignoring missing IDs**
-
-Some traffic may not have a reliable `user_id`, such as logged-out visitors. The experiment design should define how to handle these users: exclude them, randomize by anonymous ID, or use another stable identifier.
-
-**Not checking the assignment split**
-
-After launch, the team should check whether the observed split matches the planned split. A 50/50 experiment that receives 55/45 traffic may indicate a sample ratio mismatch, logging problem, eligibility bug, or inconsistent assignment.
-
-Hash-based randomization is not the only possible implementation, but it is the most common pattern. The principle is more important than the exact code:
+Hash-based randomization is not the only possible implementation. The principle is more important than the exact code:
 
 > Use a stable identifier and a deterministic randomization rule so assignment is consistent, auditable, and independent of user behavior.
 
-## Exposure and Triggered Users
-
-Assignment is not the same as exposure.
-
-A user may be assigned to treatment but never actually see the feature. For example:
-
-- A user assigned to a checkout experiment never reaches checkout
-- A user assigned to a recommendation experiment does not open the feed
-- A user assigned to one-click apply has no saved resume
-- A user assigned to a pricing experiment visits only free pages
-
-This creates two related populations:
-
-**Assigned users**
-
-Users included in the experiment assignment.
-
-**Triggered users**
-
-Users who actually had a chance to experience the treatment.
-
-Analyzing all assigned users gives an intent-to-treat estimate. It answers:
-
-> What is the effect of assigning users to this product experience?
-
-Analyzing triggered users can be more sensitive, because it focuses on users who could actually be affected. But it must be done carefully. If triggering is affected by the treatment, analyzing only triggered users can introduce bias.
-
-A good design defines the trigger event in advance.
-
-For example:
-
-> A user enters the checkout experiment when they land on the checkout page.
-
-This is cleaner than assigning all site visitors and later filtering to only those who reached checkout, especially if the treatment could affect whether users reach checkout.
-
 ## Metrics
 
-Chapter 1 introduced primary, secondary, and guardrail metrics. In experiment design, the important point is that metrics should be chosen before looking at results.
+Chapter 1 introduced primary, secondary, and guardrail metrics. Chapter 3 will discuss metric design in more detail. Here, the design task is to complete the metric plan before the experiment starts.
 
-The primary metric should match the decision. If the decision is whether to launch a checkout page, revenue per visitor may matter more than button click rate. If the decision is whether to launch a safety-sensitive recommendation model, reported content may be a hard guardrail even if watch time improves.
+The primary metric should match the hypothesis and the launch decision. In the delivery-time example, the hypothesis is not merely that users will notice the range. The business question is whether clearer expectations reduce cancellations. A natural primary metric is therefore post-order cancellation rate caused by delivery-time concerns.
+
+Delivery-time-related complaint rate can still be useful as a secondary metric, because it helps explain whether users are less frustrated even when they do not cancel.
+
+The phrase "without reducing order conversion" also matters. It implies guardrails. If the range makes delivery uncertainty more visible and fewer users place orders, the treatment may reduce cancellations only because fewer risky orders happen in the first place.
 
 Secondary metrics explain the mechanism. Guardrails protect against unintended harm.
 
@@ -289,6 +270,10 @@ Before launching an experiment, the team should estimate how much data is needed
 This is called power analysis. Its goal is to answer a practical question:
 
 > If the treatment has an effect large enough to matter, how many users do we need in order to detect it reliably?
+
+The hypothesis determines which metric this calculation should use. In the delivery-time example, sample size should be planned around the primary outcome, such as post-order cancellation rate caused by delivery-time concerns, not around a convenient high-volume metric such as page clicks.
+
+This matters because cancellation may be a relatively rare event. If the baseline cancellation rate is low, detecting a meaningful reduction may require a large number of orders or a longer experiment.
 
 The key inputs are:
 
@@ -372,20 +357,6 @@ $$
 n \approx \frac{15.68\sigma^2}{\delta^2}
 $$
 
-This equation shows the most important relationship in sample size planning:
-
-> Required sample size grows with variance and shrinks with the square of the MDE.
-
-If the MDE is cut in half, the required sample size becomes about four times larger.
-
-```mermaid
-xychart-beta
-    title "Smaller MDE Requires Much More Sample Size"
-    x-axis "MDE as % of baseline" [1, 2, 3, 4, 5]
-    y-axis "Relative sample size" 0 --> 100
-    line [100, 25, 11, 6, 4]
-```
-
 ### Sample Size for a Conversion Rate
 
 For a binary metric such as conversion rate, signup rate, or click-through rate, the metric variance is tied to the baseline rate.
@@ -450,26 +421,7 @@ But experiments should usually cover full business cycles. If user behavior diff
 
 For metrics with delayed outcomes, duration also needs to include observation time. A trial conversion experiment may need one week to collect users and another week or month to observe whether they convert.
 
-### The Planning Tradeoff
-
-Sample size planning is not just a statistical exercise. It is a business decision.
-
-A smaller MDE means the team can detect smaller improvements, but the experiment will need more users and more time.
-
-A larger MDE means the experiment can finish faster, but it may miss smaller effects that still matter.
-
-```mermaid
-flowchart LR
-    A["Smaller MDE"] --> B["More sample needed"]
-    B --> C["Longer experiment"]
-    C --> D["Higher chance of detecting small effects"]
-
-    E["Larger MDE"] --> F["Less sample needed"]
-    F --> G["Shorter experiment"]
-    G --> H["Only detects larger effects"]
-```
-
-A good experiment plan should make this tradeoff explicit:
+Sample size planning is not just a statistical exercise. It is also a business decision. A good experiment plan should make the tradeoff explicit:
 
 - What effect size would be meaningful for the business?
 - How long would it take to detect that effect?
@@ -481,7 +433,7 @@ The goal is not to calculate a perfect number. The goal is to avoid running an e
 
 ## Validity Checks
 
-Before interpreting experiment results, basic validity checks should pass.
+Before interpreting experiment results, basic validity checks should pass. These checks do not prove that the experiment is perfect, but they can reveal problems that make the result hard to trust.
 
 Important checks include:
 
@@ -513,34 +465,40 @@ Are users reacting temporarily because the experience is new?
 
 Did marketing campaigns, outages, holidays, or operational issues affect one group more than the other?
 
-These checks are not glamorous, but they prevent expensive mistakes.
+Some of these issues, such as interference and novelty effects, are discussed in later chapters. Here, the main point is that they should be considered before the team treats the result as decision-ready.
 
-## A Full Design Example
+## Putting the Design Together
 
-Suppose a food delivery app wants to test showing users an estimated delivery time range, such as "25-35 minutes," instead of a single estimate, such as "30 minutes."
+The delivery-time hypothesis can now be written as a compact experiment design:
 
-The product goal is to set better expectations and reduce frustration around delivery time.
+Hypothesis:
+- Showing a delivery-time range instead of a point estimate will reduce post-order cancellations caused by delivery-time uncertainty, without reducing order conversion.
 
-A possible hypothesis is:
-
-> Showing a delivery time range will reduce post-order cancellations and delivery-time complaints without reducing order conversion.
+Treatment and control:
+- Control users see a point estimate, such as "30 minutes"
+- Treatment users see a range, such as "25-35 minutes"
 
 Eligible users:
-- Users who view a restaurant page or checkout page where a delivery estimate is shown
+- Logged-in users in cities where delivery-time ranges are supported, using app versions that can display the new format
 
-Treatment:
-- Users see a delivery estimate range, such as "25-35 minutes"
+Exposure:
+- The treatment can affect users when they view a restaurant page or checkout page where a delivery estimate is shown
 
-Control:
-- Users see a point estimate, such as "30 minutes"
+Triggered users:
+- Eligible users who reach the first page where a delivery estimate is shown
 
 Randomization unit:
-- User level, so the experience is consistent across sessions and surfaces
+- User level, because the treatment changes the user's experience and the primary metric is based on user/order behavior. User-level assignment also keeps the delivery-time format consistent across sessions and surfaces.
+
+Randomization timing:
+- Assign users at the first qualifying restaurant page or checkout page view, before the delivery estimate is shown
+- This keeps assignment close to exposure while still happening before the treatment can affect behavior
 
 Primary metric:
-- Delivery-time-related complaint rate or post-order cancellation rate
+- Post-order cancellation rate caused by delivery-time concerns
 
 Secondary metrics:
+- Delivery-time-related complaint rate
 - Time from order placement to cancellation
 - Clicks on delivery tracking or delivery details
 - Difference between estimated and actual delivery time
@@ -555,33 +513,29 @@ Guardrail metrics:
 - Repeat order rate
 
 Duration:
-- Based on baseline complaint or cancellation rate, MDE, alpha, power, and daily eligible traffic
+- Based on baseline delivery-time-related cancellation rate, MDE, alpha, power, and daily eligible traffic
 - Run for at least full weekly cycles to cover weekday and weekend ordering patterns
 
 Validity risks:
 - Users may see a point estimate on one surface and a range on another
 - Weather or courier supply shocks may affect delivery experience
 - Logging may capture estimate exposure inconsistently
-- The range may affect order conversion before it affects complaints
+- The range may affect order conversion before it affects cancellations
 - Users may initially react differently because the format is new
 
-This design is not complicated, but it is precise. It defines who enters, what changes, what success means, what harm to watch for, and what could make the result untrustworthy.
+This design is not complicated, but it is precise. It starts from the hypothesis, then defines what changes, who enters, when treatment can matter, how assignment happens, what success means, what harm to watch for, and what could make the result untrustworthy.
 
 ## Key Takeaways
 
-A clean experiment starts before data collection.
+A clean experiment starts from a clear hypothesis.
 
-A product idea must be translated into a testable hypothesis.
-
-Eligibility should be based on users who can actually experience the treatment.
+The hypothesis should imply the treatment, eligible population, exposure moment, randomization unit, and metric plan.
 
 Treatment and control should differ in the intended way.
 
-The randomization unit should keep the experience stable and avoid contamination.
+Eligibility should be based on pre-treatment information, while exposure defines when treatment can actually matter.
 
-Assignment is not the same as exposure.
-
-Metrics should be chosen before looking at results.
+The randomization unit and timing should match the treatment, the primary metric, and the main contamination risks.
 
 Sample size and duration should be planned around MDE, power, traffic, and time patterns.
 

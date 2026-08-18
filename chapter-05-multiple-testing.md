@@ -1,5 +1,9 @@
 # Multiple Testing
 
+Chapter 4 discussed repeated testing over time. If a team checks the same experiment again and again, ordinary fixed-horizon p-values can become misleading.
+
+Multiple testing is the same kind of problem in a different direction. Instead of many chances across time, the team creates many chances across metrics, variants, segments, time windows, or hypotheses.
+
 One experiment rarely produces one number.
 
 A checkout experiment may report conversion rate, revenue per visitor, average order value, payment error rate, refund rate, page latency, and support contacts. A recommendation experiment may report watch time, retention, likes, hides, reports, creator diversity, and revenue. Analysts often slice these metrics by country, device, user tenure, acquisition channel, and product category.
@@ -24,52 +28,52 @@ Multiple testing does not mean the analysis is wrong. It means the interpretatio
 
 ## The Basic Problem
 
-Suppose the treatment has no real effect on any metric. For one test with:
+Suppose a treatment has no real effect. If the team runs one hypothesis test at:
 
 $$
 \alpha = 0.05
 $$
 
-the probability of a false positive is 5%.
+then the probability of a false positive is 5%. In other words, even when there is no true effect, about 1 in 20 tests may still look significant by chance.
 
-Now suppose the team tests 20 independent metrics, each at $\alpha = 0.05$. The probability of seeing at least one false positive is:
+The problem changes when the team runs many tests. Suppose the team tests 20 independent metrics, each at $\alpha = 0.05$. Even if the treatment has no real effect on any of them, the probability that at least one metric looks significant is:
 
 $$
 1 - (1 - 0.05)^{20}
 $$
 
-which is:
-
 $$
 1 - 0.95^{20} \approx 64\%
 $$
 
-Even when nothing is real, at least one metric is likely to look significant.
+So the risk is no longer 5%. Across the whole dashboard, the chance of seeing at least one false positive is about 64%.
 
-This is why a dashboard with many p-values can be dangerous. If the team searches long enough, the data may offer a story.
+This is why a dashboard with many p-values can be dangerous. If the team searches across enough metrics, variants, segments, or time windows, the data may eventually offer a story even when the treatment did nothing.
 
-## Family-Wise Error Rate
+The formal name for this probability is the family-wise error rate, or FWER:
 
-One way to define the multiple testing problem is through the family-wise error rate, or FWER.
+$$
+\text{FWER}
+=
+P(\text{at least one false positive within a family of tests})
+$$
 
-FWER is the probability of making at least one false positive within a family of tests.
-
-A family might be:
+The word "family" is important. It means the set of tests that should be interpreted together. A family might be:
 
 - All primary comparisons in one experiment
 - All variants compared against control
 - All metrics used for a launch decision
 - All segment tests in a predefined subgroup analysis
 
-The word "family" matters because correction depends on what set of tests should be controlled together.
-
-If a team tests one primary metric and ten secondary diagnostics, it may not need to adjust the primary metric for all diagnostic tests if the primary metric was clearly pre-specified. But if the team is willing to launch based on any of the eleven metrics, then those metrics form a decision family.
+Choosing the family is partly a product judgment. If a team pre-specifies one primary metric and uses ten secondary metrics only for diagnosis, it may not need to adjust the primary decision for all ten diagnostics. But if the team is willing to claim success based on any of the eleven metrics, then those eleven metrics form a decision family.
 
 The practical question is:
 
 > Across which tests are we allowing ourselves to claim a win?
 
 That set is the family that needs error control.
+
+Bonferroni and Holm corrections are designed to control FWER.
 
 ## Bonferroni Correction
 
@@ -155,7 +159,9 @@ Holm is often a good default when the team wants family-wise error control but d
 
 ## False Discovery Rate
 
-Family-wise error rate controls the chance of any false positive. This can be too strict when the goal is discovery.
+Bonferroni and Holm are useful when the team wants to avoid even one false positive within a decision family. That is often the right goal for confirmatory launch decisions.
+
+But not every analysis has that goal. Sometimes the purpose is discovery: finding promising segments, categories, features, or hypotheses for follow-up work. In that setting, controlling the chance of any false positive can be too strict.
 
 False discovery rate, or FDR, controls the expected share of false discoveries among all discoveries.
 
@@ -173,15 +179,17 @@ The most common FDR method is Benjamini-Hochberg.
 
 Benjamini-Hochberg controls FDR at a chosen level $q$, such as 0.05 or 0.10.
 
+Here, $q$ is the target false discovery rate. If $q = 0.10$, the procedure is designed so that, under its assumptions, roughly no more than 10% of the declared discoveries are false discoveries in expectation.
+
 The procedure is:
 
-1. Sort the $m$ p-values:
+1. Sort the $m$ p-values from smallest to largest:
 
 $$
 p_{(1)} \le p_{(2)} \le \cdots \le p_{(m)}
 $$
 
-2. Find the largest rank $k$ such that:
+2. Starting from the largest ranks, find the largest rank $k$ that passes the comparison:
 
 $$
 p_{(k)} \le \frac{k}{m}q
@@ -189,30 +197,23 @@ $$
 
 3. Declare $p_{(1)}, \ldots, p_{(k)}$ significant.
 
-For example, suppose ten segment tests have p-values:
+This is different from Holm. Holm moves from the smallest p-value upward and stops at the first failure. Benjamini-Hochberg looks for the largest passing rank and then uses that rank as the cutoff.
 
-$$
-0.002,\ 0.006,\ 0.011,\ 0.018,\ 0.029,\ 0.041,\ 0.090,\ 0.20,\ 0.40,\ 0.70
-$$
+The next example is intentionally small because it shows a feature of the procedure that can feel counterintuitive.
 
-With $q = 0.10$, the Benjamini-Hochberg thresholds are:
+For example, suppose three segment tests have p-values:
 
-| Rank | P-Value | Threshold $(k/m)q$ |
+| Rank | P-Value | BH Threshold |
 |---:|---:|---:|
-| 1 | 0.002 | 0.010 |
-| 2 | 0.006 | 0.020 |
-| 3 | 0.011 | 0.030 |
-| 4 | 0.018 | 0.040 |
-| 5 | 0.029 | 0.050 |
-| 6 | 0.041 | 0.060 |
-| 7 | 0.090 | 0.070 |
-| 8 | 0.200 | 0.080 |
-| 9 | 0.400 | 0.090 |
-| 10 | 0.700 | 0.100 |
+| 1 | 0.008 | 0.005 |
+| 2 | 0.009 | 0.010 |
+| 3 | 0.012 | 0.015 |
 
-The largest passing rank is 6, so the first six p-values are discoveries.
+Rank 1 does not pass its own threshold because $0.008 > 0.005$. Rank 2 passes, and rank 3 also passes.
 
-This does not mean all six are true effects. It means the procedure controls the expected false discovery rate at the chosen level, under its assumptions.
+The largest passing rank is 3, so all three p-values are declared significant. This can feel surprising at first. Benjamini-Hochberg is not asking each p-value to pass its own row independently. It is finding a cutoff for the discovery set. Once rank 3 passes, all smaller p-values are included because they are at least as strong as the cutoff p-value.
+
+This does not mean all three are true effects. It means the procedure controls the expected false discovery rate at the chosen level, under its assumptions.
 
 FDR is less conservative than FWER. It is often appropriate for exploration, but less appropriate when a single false positive would create a costly launch decision.
 
@@ -227,18 +228,22 @@ A common structure is:
 - Guardrails for harm
 - Exploratory metrics for learning
 
-The primary metric should be chosen before the experiment starts. If there is only one primary metric, its p-value usually does not need correction for all secondary and exploratory metrics.
+Primary metrics, secondary metrics, and guardrails should all be chosen before the experiment starts. The difference is their decision role.
 
-This is because the primary metric is the pre-specified decision test.
+If there is only one primary metric, its p-value usually does not need correction for all secondary and exploratory metrics. This is because the primary metric is the main confirmatory test for the launch decision.
 
 But the team should not quietly switch primary metrics after seeing the results. If the original primary metric is flat and one secondary metric is significant, that secondary metric should not be treated as a clean confirmatory win unless the multiple testing issue is addressed.
 
-The language matters:
+Secondary metrics are usually used to explain mechanism, guardrails are used to detect harm, and exploratory metrics are used to generate follow-up hypotheses. The language matters:
 
 - "The pre-specified primary metric improved significantly" is confirmatory.
 - "One of several exploratory metrics improved" is suggestive.
 
 Both can be useful. They should not be presented as the same level of evidence.
+
+A good rule is:
+
+> Correct within the set of metrics that can independently change the decision.
 
 ## Guardrails and Multiple Testing
 
@@ -248,25 +253,25 @@ Suppose an experiment has one primary metric and twelve guardrails. If one guard
 
 The answer depends on context.
 
-For severe safety, privacy, payment, or reliability guardrails, the team may not want to apply a strict correction before acting. A large degradation in a critical guardrail may justify investigation or rollback even if many guardrails were monitored.
+For severe safety, privacy, payment, or reliability guardrails, the team may not want to wait for a strict correction before acting. A large degradation in a critical guardrail may justify investigation or rollback even if many guardrails were monitored.
 
-For softer guardrails, such as small movements in secondary engagement metrics, multiple testing correction may be appropriate.
+For softer guardrails, such as small movements in secondary engagement metrics, multiple testing correction may be appropriate because many small warnings can easily include random noise.
 
 The practical approach is to classify guardrails by severity:
 
 **Hard guardrails**
 
-Metrics where degradation is unacceptable or risky, such as crashes, payment failures, safety reports, severe latency, or fraud. These are monitored conservatively, and practical harm can matter more than corrected significance.
+Metrics where degradation is unacceptable or risky, such as crashes, payment failures, safety reports, severe latency, or fraud. These are risk controls. Practical harm can matter more than corrected significance.
 
 **Soft guardrails**
 
-Metrics that provide context but do not automatically block launch, such as small changes in likes, time spent, or optional feature usage. These should be interpreted with the broader metric pattern.
+Metrics that provide context but do not automatically block launch, such as small changes in likes, time spent, or optional feature usage. These should be interpreted as part of the broader metric pattern, often with more attention to multiple testing.
 
 The purpose of guardrails is risk control, not discovery. A guardrail warning should often trigger investigation before it triggers a final decision.
 
 ## Many Variants
 
-Multiple testing also appears when testing more than two variants.
+Multiple testing also appears when testing more than two variants. This is sometimes called an A/B/n test.
 
 Suppose a team tests four onboarding flows:
 
@@ -277,7 +282,7 @@ Suppose a team tests four onboarding flows:
 
 If each variant is compared with control at $\alpha = 0.05$, the chance of at least one false positive increases.
 
-If the goal is to choose any winning variant against control, the comparisons form a family.
+This is the same family question from earlier in the chapter. If the team is willing to choose any winning variant against control, then the treatment-control comparisons form one decision family.
 
 For three treatment-control comparisons, Bonferroni would use:
 
@@ -341,40 +346,21 @@ For heterogeneous treatment effects, the cleanest evidence often comes from:
 - Correction for multiple comparisons
 - Replication in follow-up experiments
 
-## Interaction Tests
-
-A common mistake is comparing significance across segments incorrectly.
-
-Suppose treatment is significant for iOS users but not significant for Android users. This does not automatically mean the treatment effect is different between iOS and Android.
-
-The correct question is:
+An interaction test answers:
 
 > Is the treatment effect significantly different across segments?
 
-This is an interaction test.
-
-A regression model might include:
-
-$$
-Y_i = \alpha + \tau T_i + \gamma S_i + \delta(T_i \times S_i) + \epsilon_i
-$$
-
-where:
-
-- $T_i$ is treatment assignment
-- $S_i$ is a segment indicator
-- $T_i \times S_i$ is the interaction
-- $\delta$ measures whether the treatment effect differs by segment
-
-The segment difference is tested through $\delta$, not by checking whether one segment has $p < 0.05$ and another segment has $p > 0.05$.
-
-This distinction matters because one segment may be noisier or smaller than another. A result can be significant in one group and not significant in another even when the estimated effects are similar.
+Interaction tests are discussed in Chapter 10.
 
 ## Practical Significance Still Matters
 
 Multiple testing corrections control statistical error, but they do not decide whether an effect matters.
 
-With enough traffic, a tiny corrected-significant effect may still be practically irrelevant. With limited traffic, a meaningful effect may not survive a strict correction.
+Correction changes how strong the statistical evidence needs to be. It does not tell us whether the effect is worth acting on.
+
+In a very large experiment, a tiny effect can pass even a strict correction but still be too small to matter for the business. In a small experiment, a potentially meaningful effect may fail to pass correction because the estimate is too noisy.
+
+So after correcting for multiple testing, the team still needs to ask whether the effect is large enough, reliable enough, and relevant enough to change the decision.
 
 The experiment report should separate:
 
@@ -416,11 +402,13 @@ The result is:
 
 If the team treats every metric as a possible launch metric, the watch-time and completion-rate p-values are less convincing because many metrics were checked.
 
-If retention was truly the pre-specified primary metric, the clean interpretation is:
+In this case, the decision family matters. If retention was the only confirmatory primary metric, then the clean interpretation is:
 
 > The primary metric did not improve. Some engagement metrics moved positively, but those results are secondary and should be interpreted cautiously in light of multiple testing and the reported-content warning.
 
 A reasonable decision might be to iterate, run a follow-up experiment with engagement as a pre-specified objective, or investigate whether the watch-time lift comes from healthy content. The experiment is not a clear launch win.
+
+If the team instead wants to justify launch based on any positive movement among retention, watch time, completion rate, or other engagement metrics, then those metrics form a larger decision family and the multiple testing problem must be handled explicitly.
 
 ## Practical Workflow
 
@@ -439,22 +427,20 @@ This workflow keeps the analysis honest without preventing useful exploration.
 
 ## Key Takeaways
 
-Multiple testing creates more chances for false positives.
+Multiple testing creates more chances for random noise to look like a real effect.
 
-The family-wise error rate is the probability of at least one false positive within a family of tests.
+The relevant family is the set of tests that can support the same claim or decision.
 
-Bonferroni is simple and conservative.
+FWER controls the chance of at least one false positive within a family. Bonferroni is simple and conservative; Holm is usually less conservative while still controlling FWER.
 
-Holm controls family-wise error and is usually less conservative than Bonferroni.
+FDR controls the expected share of false discoveries among declared discoveries. Benjamini-Hochberg is useful when the goal is exploration or discovery.
 
-Benjamini-Hochberg controls false discovery rate and is useful for exploratory analysis.
+Primary, secondary, guardrail, and exploratory metrics can all be pre-specified, but they play different decision roles.
 
-A pre-specified primary metric reduces ambiguity.
+Correct within the set of metrics, variants, or segments that can independently change the decision.
 
-Secondary and exploratory metrics should not quietly become the launch metric after results are known.
+Post-hoc segment wins should be treated as hypotheses unless they are corrected for multiple testing or replicated.
 
-Segment analysis is especially vulnerable to multiple testing.
+Significant in one segment but not another does not prove heterogeneity. Use an interaction test.
 
-An effect significant in one segment but not another does not prove heterogeneity; use an interaction test.
-
-Statistical correction does not replace business judgment.
+Statistical correction controls error rates. It does not replace effect size, uncertainty, guardrail severity, or business judgment.

@@ -191,7 +191,7 @@ Examples:
 - Two ads experiments both affect auction prices.
 - Two feed ranking experiments both affect creator exposure.
 
-This overlaps with the interference problems from Chapter 8. The difference is that Chapter 8 focused on interference between treatment and control units inside one experiment. Concurrent experiments add another layer: different experiments can interfere with each other.
+This overlaps with the interference problems from Chapter 9. The difference is that Chapter 9 focused on interference between treatment and control units inside one experiment. Concurrent experiments add another layer: different experiments can interfere with each other.
 
 ### Same Machine Learning System
 

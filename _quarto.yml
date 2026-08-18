@@ -10,24 +10,38 @@ book:
     - index.qmd
     - part: "Part I: Foundations"
       chapters:
+        - part-01-foundations.md
         - chapter-01-what-are-we-really-testing.md
         - chapter-02-designing-a-clean-experiment.md
         - chapter-03-metrics-are-not-just-numbers.md
-    - part: "Part II: Inference Problems"
+    - part: "Part II: Inference and Evidence Problems"
       chapters:
+        - part-02-inference-problems.md
         - chapter-04-the-peeking-problem.md
-        - chapter-05-variance-reduction.md
-        - chapter-06-multiple-testing.md
+        - chapter-05-multiple-testing.md
+        - chapter-06-variance-reduction.md
+        - chapter-07-long-term-effects-and-holdouts.md
     - part: "Part III: Real-World Experiment Complications"
       chapters:
-        - chapter-07-triggered-analysis-and-noncompliance.md
-        - chapter-08-interference-and-network-effects.md
-        - chapter-09-concurrent-experiments.md
-    - part: "Part IV: Learning Beyond the Average"
+        - part-03-real-world-experiment-complications.md
+        - chapter-08-triggered-analysis-and-noncompliance.md
+        - chapter-09-interference-and-network-effects.md
+    - part: "Part IV: Learning and Optimization"
       chapters:
+        - part-04-learning-and-optimization.md
         - chapter-10-heterogeneous-treatment-effects.md
-        - chapter-11-long-term-effects-and-holdouts.md
-        - chapter-12-bandits-and-adaptive-experiments.md
+        - chapter-11-bandits-and-adaptive-experiments.md
+        - chapter-12-ranking-experiments-and-interleaving.md
+    - part: "Part V: Experiment Platforms and Operations"
+      chapters:
+        - part-05-experiment-platforms-and-operations.md
+        - chapter-13-concurrent-experiments.md
+        - chapter-14-experiment-quality-checks.md
+        - chapter-15-from-result-to-decision.md
+    - part: "Part VI: When Randomization Is Hard"
+      chapters:
+        - part-06-when-randomization-is-hard.md
+        - chapter-16-quasi-experiments.md
   page-footer:
     left: "Beyond Simple A/B Tests"
     right: "Built with Quarto"

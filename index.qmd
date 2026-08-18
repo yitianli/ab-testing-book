@@ -21,36 +21,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
 This book is a practical guide to modern A/B testing.
 
-It starts from the basic structure of a clean experiment, then moves into the problems that appear in real product systems: ratio metrics, peeking, variance reduction, multiple testing, noncompliance, interference, concurrent experiments, heterogeneous treatment effects, long-term holdouts, and adaptive experiments.
+It starts from the basic structure of a clean experiment, then moves into the problems that appear in real product systems: ratio metrics, peeking, multiple testing, variance reduction, long-term effects, noncompliance, interference, heterogeneous treatment effects, adaptive experiments, ranking experiments, experiment platforms, and quasi-experiments.
 
 The goal is not only to explain statistical methods. The goal is to build product judgment: how to translate a business question into an experiment, how to choose metrics, how to detect when a result is misleading, and how to make a decision when the data is useful but imperfect.
 
 ## How to Read This Book
 
-The chapters are arranged in five parts.
+The chapters are arranged in six parts.
 
 ### Part I: Foundations
 
-The first part explains what an experiment is really testing. It covers hypotheses, treatment effects, randomization, sample size, duration, and metric design.
+The first part explains how to move from a product idea to a trustworthy experiment. Chapter 1 turns a business question into a decision-ready hypothesis. Chapter 2 shows how that hypothesis anchors the experiment design: treatment, eligibility, exposure, randomization, sample size, and validity checks. Chapter 3 explains how the hypothesis becomes measurable through primary metrics, secondary metrics, guardrails, proxy metrics, ratio metrics, and decomposition.
 
-### Part II: Inference Problems
+### Part II: Inference and Evidence Problems
 
-The second part focuses on statistical problems that often appear even when the experiment itself is randomized: peeking, variance reduction, and multiple testing.
+The second part focuses on evidence problems that can appear even when treatment assignment is randomized correctly. Chapter 4 explains why repeated checking creates the peeking problem and how sequential methods address it. Chapter 5 extends the same idea to multiple testing, where many metrics, variants, or segments can turn random noise into apparently significant results. Chapter 6 discusses variance reduction methods for limited sample size. Chapter 7 discusses long-term effects and holdouts, where limited duration can make short-term results incomplete.
 
 ### Part III: Real-World Experiment Complications
 
-The third part discusses issues that appear in production systems: triggered analysis, noncompliance, interference, network effects, and overlapping experiments.
+The third part discusses complications that appear in real product systems. Chapter 8 covers triggered analysis and noncompliance, where assignment, exposure, and actual treatment received are not the same thing. Chapter 9 explains interference and network effects, where one unit's treatment can affect another unit's outcome.
 
-### Part IV: Learning Beyond the Average
+### Part IV: Learning and Optimization
 
-The fourth part moves beyond the average treatment effect. It covers heterogeneous effects, long-term effects, holdouts, and adaptive experiments.
+The fourth part moves beyond a single average treatment effect. Chapter 10 introduces heterogeneous treatment effects and uplift modeling, which ask who benefits most or least. Chapter 11 discusses bandits and adaptive experiments, where traffic allocation changes while learning. Chapter 12 covers ranking experiments and interleaving, where the goal is often to compare ranking systems faster and more sensitively than a standard A/B test.
 
-### Part V: When Randomization Is Hard
+### Part V: Experiment Platforms and Operations
 
-The final part is planned for later chapters. It will cover quasi-experiments, experiment quality checks, and launch decisions.
+The fifth part focuses on the operating system around experimentation. Chapter 13 discusses concurrent experiments and experiment layers, where many tests run at the same time. Chapter 14 covers experiment quality checks, such as sample ratio mismatch, logging correctness, and balance checks. Chapter 15 turns results into decisions, including practical significance, guardrail tradeoffs, rollout strategy, and decision-making under uncertainty.
 
-## Planned Chapters
+### Part VI: When Randomization Is Hard
 
-- Chapter 13: Quasi-Experiments
-- Chapter 14: Experiment Quality Checks
-- Chapter 15: From Result to Decision
+The final part discusses how to reason about causal evidence when a clean randomized experiment is not available. Chapter 16 introduces quasi-experimental methods such as difference-in-differences and synthetic control, emphasizing both their usefulness and the assumptions that make them credible.

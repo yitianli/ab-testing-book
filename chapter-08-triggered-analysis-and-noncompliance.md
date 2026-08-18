@@ -1,22 +1,22 @@
 # Triggered Analysis and Noncompliance
 
-Randomization assigns users to an experiment. It does not guarantee that they experience the treatment.
+Randomization assigns users to an experiment. It does not guarantee that assignment, exposure, and actual treatment receipt line up neatly.
 
-A user may be assigned to a checkout experiment but never reach checkout. A user may be assigned to a recommendation experiment but never open the feed. A user may be assigned to a one-click apply experiment but not have a saved resume. A user may be assigned to a coupon experiment but never see the coupon.
+In a clean textbook experiment, a user assigned to treatment receives treatment, a user assigned to control does not, and every assigned user has a meaningful chance to be affected. Product experiments are often messier.
 
-This creates one of the most common interpretation problems in A/B testing:
+Sometimes many assigned users never reach the moment where the treatment could affect them. A user may be assigned to a checkout experiment but never reach checkout, or assigned to a recommendation experiment but never open the feed. This creates the triggered analysis problem.
 
-> Should the experiment analyze everyone assigned, or only users who actually experienced the feature?
+Sometimes users reach the relevant moment, but actual treatment received does not match assignment. A user assigned to treatment may not see the feature because of a bug, or a user assigned to control may see treatment because of cache leakage. This creates the noncompliance problem.
 
-The answer depends on the question.
-
-This chapter explains assignment, exposure, triggered analysis, intent-to-treat, treatment-on-treated, noncompliance, and why filtering on post-treatment behavior can be dangerous.
+This chapter asks what effect the experiment estimates when these steps do not align. Should the analysis include everyone assigned, only users who reached a pre-defined trigger, or users who actually received treatment? The answer depends on the product question and on what can be interpreted causally.
 
 ## Assignment Is Not Exposure
 
 Experiment assignment is the random decision made by the experimentation system.
 
 Exposure is the moment a user actually has a chance to be affected by the treatment.
+
+Chapter 2 introduced triggered users as a design concept: users enter the experiment when they reach a treatment-relevant moment. Here we return to the same idea from the analysis side. The question is not only who entered the experiment, but what effect the analysis estimates.
 
 For example, suppose a product tests a new checkout page.
 
@@ -44,7 +44,7 @@ Intent-to-treat, or ITT, analyzes users according to their assigned group, regar
 The ITT effect is:
 
 $$
-\widehat{\tau}_{ITT}
+\widehat{\tau}_{\text{ITT}}
 =
 \bar{Y}_{Z=1} - \bar{Y}_{Z=0}
 $$
@@ -66,7 +66,7 @@ The treatment worked where it was shown, but the broad assignment population mak
 
 ## Triggered Analysis
 
-Triggered analysis focuses on users who actually triggered the experiment.
+Triggered analysis focuses on users who reached a pre-defined trigger event.
 
 A trigger event is the moment a user becomes eligible to experience the treatment. Examples include:
 
@@ -88,7 +88,7 @@ Triggered analysis can improve sensitivity because it removes users who could no
 
 But triggered analysis is only safe when the trigger is not affected by treatment.
 
-## The Post-Treatment Filtering Problem
+## Post-Treatment Filtering and Trigger Timing
 
 Filtering on post-treatment behavior can break randomization.
 
@@ -108,9 +108,7 @@ For example:
 
 This does not mean post-treatment analyses are useless. They can help explain mechanisms. But they should not be presented as clean causal effects unless the assumptions are clear.
 
-## Safe and Risky Triggers
-
-Triggers are safer when they happen before treatment can affect behavior.
+This is why trigger timing matters. Triggers are safer when they happen before treatment can affect behavior.
 
 Consider two checkout experiments.
 
@@ -120,25 +118,13 @@ In the second experiment, the assignment happens on the homepage, and treatment 
 
 The same event, reaching checkout, can be safe or risky depending on where treatment starts.
 
-The timing matters:
+The rule is simple:
 
-```mermaid
-flowchart LR
-    A["Trigger event"] --> B["Treatment exposure"] --> C["Outcome"]
-```
-
-This structure is usually safe.
-
-```mermaid
-flowchart LR
-    A["Treatment exposure"] --> B["Trigger/filter event"] --> C["Outcome"]
-```
-
-This structure is risky because the filter is downstream of treatment.
+> A trigger is safer when it happens before treatment exposure. A filter is risky when it happens after treatment could have changed behavior.
 
 ## Treatment-on-Treated
 
-Treatment-on-treated, or TOT, tries to estimate the effect among users who actually received treatment.
+Treatment-on-treated, or TOT, tries to estimate the effect among users who actually received treatment. It is tempting because product teams often want to know whether the feature worked for users who saw or used it.
 
 The simplest intuition is:
 
@@ -169,7 +155,7 @@ $$
 
 This says the effect among users who actually saw the new ranking model may be about +5%.
 
-But this estimate depends on assumptions. If users who open the feed are systematically different, or if treatment affects whether users open the feed, the simple ratio can mislead.
+But this estimate depends on assumptions. If users who open the feed are systematically different, or if treatment affects whether users open the feed, the simple ratio can mislead. Once actual treatment receipt is not random, the analysis needs a way to recover causal variation. This is where noncompliance and instrumental variables become useful.
 
 ## Noncompliance
 
@@ -177,6 +163,7 @@ Noncompliance occurs when assignment and actual treatment received do not match.
 
 Examples include:
 
+- In a clinical trial, patients assigned to treatment do not follow the instruction to take the medicine
 - Users assigned to treatment do not see the feature because of a bug
 - Users assigned to control see treatment because of cache or cross-device leakage
 - A seller assigned to a new policy opts out
@@ -201,28 +188,60 @@ This is why analyzing by actual treatment received can be biased. Users who actu
 
 For example, coupon redemption is not random. Users who redeem coupons may be more price-sensitive or more purchase-intent than users who ignore them. Comparing redeemers to non-redeemers does not estimate the causal effect of coupons.
 
+Noncompliance can be one-sided or two-sided.
+
+In one-sided noncompliance, only treatment users can fail to receive treatment; control users cannot receive treatment. For example, treatment users may be eligible for a new onboarding module, some may never reach it, and control users never see it.
+
+In two-sided noncompliance, both sides can mismatch assignment. Some treatment users may miss the feature because of a bug, while some control users may see it because of cache leakage.
+
 ## Instrumental Variables and Complier Effects
 
-Random assignment can sometimes be used as an instrument for actual treatment received.
+When actual treatment receipt is not random, random assignment can sometimes be used as an instrument for actual treatment received. This is the same instrumental variables idea used in econometrics, but the variables have experiment-platform names.
 
-The idea is:
-
-> Assignment is random, and assignment changes the probability of receiving treatment.
-
-Under certain assumptions, the experiment can estimate the causal effect for compliers: users whose treatment received changes because of assignment.
-
-This is often called the complier average causal effect, or CACE. It is closely related to treatment-on-treated in one-sided noncompliance settings.
-
-The Wald estimator is:
+In a simple econometrics setting, the binary IV estimator can be written as:
 
 $$
-\widehat{\tau}_{CACE}
+\widehat{\beta}_{\text{IV}}
+=
+\frac{\text{Cov}(Z, Y)}
+{\text{Cov}(Z, D)}
+$$
+
+where:
+
+- $Z_i$ is the instrument
+- $D_i$ is the endogenous treatment actually received
+- $Y_i$ is the outcome
+
+For $Z_i$ to be a valid instrument, the core conditions are:
+
+- $Z_i$ must affect actual treatment received, so $\text{Cov}(Z_i, D_i) \neq 0$.
+- Any relationship between $Z_i$ and $Y_i$ should come only through actual treatment received $D_i$.
+
+In an experiment with noncompliance, random assignment is often a natural instrument. Assignment is random, and assignment changes the probability of receiving treatment.
+
+Because $Z_i$ is binary, the covariance ratio becomes a difference-in-means ratio:
+
+$$
+\frac{\text{Cov}(Z, Y)}
+{\text{Cov}(Z, D)}
+=
+\frac{E[Y \mid Z=1] - E[Y \mid Z=0]}
+{E[D \mid Z=1] - E[D \mid Z=0]}
+$$
+
+That is exactly the estimator used here:
+
+$$
+\widehat{\tau}_{\text{CACE}}
 =
 \frac{\bar{Y}_{Z=1} - \bar{Y}_{Z=0}}
 {\bar{D}_{Z=1} - \bar{D}_{Z=0}}
 $$
 
-The numerator is the ITT effect on the outcome. The denominator is the ITT effect on treatment received.
+Under certain assumptions, this estimates the causal effect for compliers: users whose treatment received changes because of assignment. This is often called the complier average causal effect, or CACE. In econometrics language, it is the local average treatment effect, or LATE.
+
+In one-sided noncompliance, control users never receive treatment, so $\bar{D}_{Z=0} = 0$ and the denominator becomes the treatment exposure rate. In two-sided noncompliance, both treatment and control can mismatch assignment, so the denominator measures the exposure gap between the assigned groups.
 
 For example:
 
@@ -234,76 +253,16 @@ For example:
 Then:
 
 $$
-\widehat{\tau}_{CACE}
+\widehat{\tau}_{\text{CACE}}
 =
-\frac{1.5}{50}
+\frac{1.5}{0.5}
 =
 3\text{ percentage points}
 $$
 
 The estimated effect among compliers is 3 percentage points.
 
-This estimate requires assumptions:
-
-- Assignment is random
-- Assignment affects the outcome only through treatment received
-- Assignment increases treatment received in a consistent direction
-- There is no interference between units
-
-These assumptions are not automatic. They should be argued from the product design.
-
-## One-Sided and Two-Sided Noncompliance
-
-Noncompliance can be one-sided or two-sided.
-
-In one-sided noncompliance, only treatment users can fail to receive treatment. Control users cannot receive treatment.
-
-Example:
-
-- Treatment users are eligible for a new onboarding module
-- Some never reach the module
-- Control users never see the module
-
-In this case:
-
-$$
-\bar{D}_{Z=0} = 0
-$$
-
-and the CACE denominator becomes the treatment exposure rate.
-
-In two-sided noncompliance, both sides can mismatch assignment.
-
-Example:
-
-- Some treatment users do not see the feature because of a bug
-- Some control users see the feature because of cache leakage
-
-Two-sided noncompliance is harder because the experiment has contamination in both directions. The ITT estimate may still be valid for assignment, but estimating the effect of actual treatment requires stronger assumptions.
-
-## Exposure Rate and Dilution
-
-Low exposure rates dilute ITT estimates.
-
-Suppose a feature has a true effect of +10% among exposed users.
-
-If only 10% of assigned users are exposed, the ITT effect may be roughly:
-
-$$
-10\% \times 10\% = 1\%
-$$
-
-If 50% are exposed, the ITT effect may be roughly:
-
-$$
-10\% \times 50\% = 5\%
-$$
-
-This matters for power.
-
-An experiment randomized too broadly may need much more sample size to detect the diluted ITT effect. Triggering the experiment closer to the actual exposure point can increase sensitivity.
-
-But triggering closer to exposure is safe only if the trigger is not affected by treatment.
+The example is simple, but the IV assumptions are not automatic. They should be argued from the product design.
 
 ## Product Example: One-Click Apply
 
@@ -378,13 +337,14 @@ A practical workflow for triggered analysis and noncompliance is:
 
 1. Define the randomization point.
 2. Define the first moment a user can be affected by treatment.
-3. Decide whether the primary estimand is ITT, triggered effect, or complier effect.
-4. Define trigger events before launch.
-5. Avoid filtering on post-treatment behavior for the primary causal estimate.
-6. Track exposure and treatment receipt separately from assignment.
-7. Report exposure rates by treatment group.
-8. If noncompliance exists, report ITT first and use CACE/TOT only with clear assumptions.
-9. Use post-treatment funnel cuts as diagnostics, not as the main causal result.
+3. Define trigger events before launch.
+4. Decide whether the primary estimand is ITT, triggered effect, or complier effect.
+5. Track assignment, exposure, treatment receipt, and outcome separately.
+6. Avoid filtering on post-treatment behavior for the primary causal estimate.
+7. Report exposure and treatment receipt rates by assigned group.
+8. Report ITT first when noncompliance exists.
+9. Use CACE or TOT only with clear assumptions.
+10. Treat post-treatment funnel cuts as diagnostics, not as the main causal result.
 
 ## Common Mistakes
 
@@ -402,28 +362,28 @@ Triggered analysis can be valid, but it answers a different question from the br
 
 **Ignoring exposure rate**
 
-A small ITT effect may hide a large effect among exposed users if exposure is rare.
+A small ITT effect may hide a large effect among exposed users if exposure is rare. The exposure rate is part of the interpretation, not a dashboard footnote.
 
 **Using treatment-on-treated without assumptions**
 
-TOT and CACE require assumptions about how assignment affects treatment receipt and outcomes.
+TOT and CACE require assumptions about how assignment affects treatment receipt and outcomes. They should not replace ITT silently.
 
 ## Key Takeaways
 
-Assignment is not the same as exposure.
+Assignment, exposure, and treatment receipt are different concepts.
 
 Intent-to-treat analyzes users by assignment and preserves randomization.
 
-Triggered analysis focuses on users who had a chance to experience treatment.
+Triggered analysis focuses on users who reached a pre-defined moment where treatment could affect them.
 
 Triggered analysis is safest when the trigger occurs before treatment can affect behavior.
 
 Filtering on post-treatment behavior can create selection bias.
 
-Treatment-on-treated estimates the effect among users who received treatment, but it requires stronger assumptions.
-
 Noncompliance means assignment and treatment received do not match.
 
-Random assignment can sometimes be used as an instrument to estimate complier effects.
+Treatment-on-treated and CACE estimate effects among users who actually received or complied with treatment, but they require stronger assumptions than ITT.
 
-Report assignment, exposure, and outcome clearly. Most confusion comes from mixing them together.
+Random assignment can sometimes be used as an instrument for actual treatment received.
+
+Most confusion comes from mixing assignment, exposure, treatment receipt, and outcome into one number.

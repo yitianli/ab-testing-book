@@ -110,7 +110,12 @@ If early stopping is possible, the stopping rule should be designed before the e
 
 Group sequential testing allows interim looks while controlling the overall false positive rate.
 
-Instead of checking whenever someone feels curious, the team predefines a small number of analysis checkpoints.
+Instead of checking whenever someone feels curious, the team defines the monitoring plan before the experiment starts:
+
+- How many times will the experiment be analyzed?
+- When will those looks happen?
+- What threshold will be used at each look?
+- Is early stopping allowed for success, harm, futility, or all of them?
 
 For example:
 
@@ -119,7 +124,7 @@ For example:
 - Look 3: after 75% of the planned sample
 - Final look: after 100% of the planned sample
 
-At each look, the experiment can stop early if the evidence is strong enough. But the significance threshold is adjusted so that the total false positive rate across all looks remains controlled.
+At each look, the experiment can stop early if the evidence is strong enough. The key is that the threshold is adjusted so that the total false positive rate across all looks remains controlled.
 
 The idea is:
 
@@ -127,30 +132,37 @@ The idea is:
 
 If the total alpha is 0.05, the experiment cannot spend 0.05 at every look. It must allocate alpha across the looks.
 
-## Pocock and O'Brien-Fleming Boundaries
+There are three common ways to choose the interim thresholds.
 
-Two common group sequential boundary styles are Pocock and O'Brien-Fleming.
+### Pocock Boundaries
 
-Pocock-style boundaries use a similar threshold at each look. The early threshold is stricter than 0.05, but not extremely strict.
+Pocock boundaries use roughly the same threshold at every planned look.
 
-O'Brien-Fleming-style boundaries are very strict early and become closer to 0.05 near the final look.
+The intuition is simple: every look gets a similar chance to stop the experiment, so the threshold must be stricter than the ordinary fixed-horizon threshold at every look. This makes Pocock relatively friendly to early stopping, but it also means the final look remains stricter than $p < 0.05$.
 
-For a concrete example, suppose the experiment uses a two-sided test with total $\alpha = 0.05$ and four equally spaced looks at 25%, 50%, 75%, and 100% of the planned information.
+### O'Brien-Fleming Boundaries
 
-A group sequential design is usually described in terms of a test statistic $Z_k$ at look $k$. Under the null hypothesis, the vector of interim $Z$-statistics is correlated because later looks contain much of the same data as earlier looks. If the information fraction at look $k$ is $t_k$, then a common approximation is:
+O'Brien-Fleming boundaries are very strict early and become much closer to the ordinary fixed-horizon threshold near the final look.
 
-$$
-\text{Corr}(Z_i, Z_j) =
-\sqrt{\frac{\min(t_i,t_j)}{\max(t_i,t_j)}}
-$$
+The intuition is that early data is noisy, so the experiment should stop early only for overwhelming evidence. Most of the alpha budget is preserved for the final analysis. This makes O'Brien-Fleming attractive for many product experiments: it allows early stopping for very large effects while keeping the final analysis close to the usual fixed-horizon test.
 
-Thresholds are chosen so that the probability of crossing any boundary under the null equals the total alpha:
+### Alpha Spending
 
-$$
-P_0\left(\max_k |Z_k| > b_k\right) = \alpha
-$$
+Alpha spending generalizes the same idea.
 
-For four equally spaced looks, approximate two-sided nominal p-value thresholds are:
+Instead of requiring the experiment to hit exact planned look times, an alpha spending function says how much of the total alpha budget may be spent as information accumulates. This is useful when the team plans to look at 50% information but, because of traffic variation, the actual look happens at 47% or 53%.
+
+In practice, choosing an alpha spending function usually means choosing a standard spending style, not inventing one from scratch:
+
+- O'Brien-Fleming-like spending: spends very little alpha early and most of it near the end
+- Pocock-like spending: spends alpha more evenly across looks
+- Custom spending: used only when there is a special reason and statistical support
+
+### A Four-Look Example
+
+Suppose the experiment uses a two-sided test with total $\alpha = 0.05$ and four planned looks at 25%, 50%, 75%, and 100% of the planned information.
+
+Approximate two-sided nominal p-value thresholds might look like this:
 
 | Look | Information Fraction | Naive Fixed-Horizon | Pocock Approximation | O'Brien-Fleming Approximation |
 |---:|---:|---:|---:|---:|
@@ -159,57 +171,42 @@ For four equally spaced looks, approximate two-sided nominal p-value thresholds 
 | 3 | 75% | 0.05 | 0.018 | 0.019 |
 | 4 | 100% | 0.05 | 0.018 | 0.043 |
 
-The corresponding O'Brien-Fleming-style $Z$-boundaries are approximately:
+The table is a decision-rule illustration:
 
-$$
-b_k = \frac{2.024}{\sqrt{t_k}}
-$$
+- Naive fixed-horizon testing would incorrectly use $p < 0.05$ at every look.
+- Pocock uses a similar stricter threshold at each planned look.
+- O'Brien-Fleming requires extremely strong evidence early, then approaches the usual threshold near the final look.
 
-So for $t = 0.25, 0.50, 0.75, 1.00$, the $Z$-boundaries are about:
+The numbers are illustrative, not universal. Exact thresholds depend on the number of looks, one-sided versus two-sided testing, information timing, and the chosen design.
 
-$$
-4.05,\quad 2.86,\quad 2.34,\quad 2.02
-$$
+### How Teams Compute Boundaries in Practice
 
-The corresponding Pocock-style boundary is approximately constant:
+Teams usually do not compute these boundaries by hand. They use an experimentation platform, a statistics library, or validated software.
 
-$$
-b_k \approx 2.36
-$$
+Common options include:
 
-which corresponds to a two-sided nominal p-value of about 0.018 at each look.
+- R packages such as [`gsDesign`](https://search.r-project.org/CRAN/refmans/gsDesign/html/gsDesign.html) and [`rpact`](https://docs.rpact.org/reference/getDesignGroupSequential.html)
+- GUI-oriented tools such as [`GroupSeq`](https://rpahl.github.io/GroupSeq/)
+- Commercial tools such as SAS `PROC SEQDESIGN`
+- Internal experimentation platforms that implement standard sequential designs
 
-These numbers are illustrative, not universal. Exact thresholds depend on the number of looks, one-sided versus two-sided testing, information timing, and the specific sequential design. But the pattern is the important part: early looks require stronger evidence than an ordinary fixed-horizon test.
+The team usually specifies:
 
-The practical difference is:
+- Total alpha, such as 0.05
+- One-sided or two-sided testing
+- Number of planned looks or information fractions
+- Boundary style, such as Pocock, O'Brien-Fleming, or alpha spending
+- Whether early stopping is allowed for success, futility, harm, or some combination
 
-- Pocock gives a better chance of stopping earlier, but uses a stricter final threshold.
-- O'Brien-Fleming makes early stopping harder, but keeps the final threshold close to the usual fixed-horizon threshold.
+The software returns the nominal p-value thresholds, $Z$-boundaries, adjusted p-values, or stopping recommendations.
 
-For many product experiments, O'Brien-Fleming-style monitoring is attractive because it allows early stopping for very strong effects without sacrificing much power at the planned endpoint.
+The formulas behind these methods are important for understanding why the thresholds are stricter, but production thresholds should come from a validated implementation rather than manual approximation.
 
-## Alpha Spending
-
-Alpha spending is a flexible way to design sequential monitoring.
-
-Instead of fixing exact look times in a rigid way, the experiment defines an alpha spending function. This function describes how much of the total false positive budget can be spent as information accumulates.
-
-The information fraction is often approximated by:
-
-$$
-\text{Information fraction} =
-\frac{\text{sample size observed so far}}{\text{planned total sample size}}
-$$
-
-At 50% of the sample, the test has roughly 50% of the planned information. At 100%, it has all of it.
-
-An alpha spending rule might spend very little alpha early and more alpha near the end. This gives the team a principled way to monitor while preserving the overall Type I error rate.
-
-The important point is not the exact function. The important point is that the peeking plan is part of the design, not an improvised reaction to a promising dashboard.
+For technical details, see Pocock (1977), O'Brien and Fleming (1979), and Lan and DeMets (1983).
 
 ## Sequential Tests and Always-Valid Inference
 
-Another family of methods is designed for continuous monitoring.
+Group sequential designs work well when the team can plan a small number of interim looks. Another family of methods is designed for more continuous monitoring.
 
 These methods produce evidence measures that remain valid even when the experiment is checked repeatedly. Examples include:
 
@@ -224,7 +221,9 @@ The details differ, but the goal is similar:
 
 ### Sequential Probability Ratio Test
 
-The sequential probability ratio test, or SPRT, compares two specific hypotheses:
+The sequential probability ratio test, or SPRT, is one of the classic ideas behind sequential testing. It is useful conceptually because it shows what a formal stop-or-continue rule looks like.
+
+SPRT compares two specific hypotheses:
 
 $$
 H_0: \text{effect} = 0
@@ -262,28 +261,40 @@ $$
 
 So the data must become at least 16 times more likely under the alternative than under the null before the test stops for success.
 
-SPRT is powerful when the hypotheses are simple and the effect size of interest is clear. In many product experiments, however, the treatment effect is not a single fixed value, so teams often use generalized sequential methods rather than a plain SPRT.
+SPRT is powerful when the hypotheses are simple and the effect size of interest is clear. In many product experiments, however, the treatment effect is not a single fixed value and the metric may be delayed or noisy. For that reason, teams often use generalized sequential methods, always-valid p-values, or platform-level sequential testing rather than a plain SPRT.
 
 ### Always-Valid P-Values
 
-An always-valid p-value is designed so that optional stopping does not break Type I error control.
+An always-valid p-value is designed for experiments that may be checked repeatedly. It answers a familiar question:
 
-The decision rule can be simple:
+> If the null hypothesis is true, how surprising is the evidence we have seen so far, even after allowing for repeated monitoring?
+
+The analyst can use it much like an ordinary p-value, but with a different validity guarantee. The decision rule can be simple:
 
 > Stop for success the first time the always-valid p-value is below $\alpha$.
 
-The difference from ordinary p-values is that this rule remains valid even if the team checks the result many times. The p-value process is constructed to account for repeated monitoring.
+For example, if $\alpha = 0.05$, the team can stop when the always-valid p-value first drops below 0.05.
+
+The difference from an ordinary p-value is that this rule remains valid even if the team checks the result many times. An ordinary fixed-horizon p-value is calibrated for one planned analysis. An always-valid p-value is constructed as a process over time, so the false positive rate remains controlled under optional stopping.
 
 In practice, this means the experiment platform may show two different values:
 
 - A fixed-horizon p-value, valid at the planned endpoint
 - An always-valid p-value, valid under continuous monitoring
 
-Only the second one should be used for optional stopping.
+Only the second one should be used for optional stopping. Teams usually do not compute always-valid p-values by hand; they use experimentation platforms or statistical libraries that implement the required sequential method.
 
 ### Confidence Sequences
 
-A confidence sequence is like a confidence interval that is valid across time. Instead of saying, "This interval has 95% coverage at the final planned sample size," it aims to say, "This sequence of intervals maintains coverage even as the sample grows and the analyst looks repeatedly."
+A confidence sequence is like a confidence interval that is valid across time.
+
+A usual 95% confidence interval says:
+
+> At the planned final sample size, this interval has 95% coverage.
+
+A 95% confidence sequence says something stronger:
+
+> Across the whole sequence of looks, the interval process covers the true effect with high probability.
 
 For a treatment effect $\tau$, a 95% confidence sequence gives an interval at each time $t$:
 
@@ -297,6 +308,8 @@ $$
 P\left(\forall t,\ \tau \in [L_t, U_t]\right) \ge 95\%
 $$
 
+The analyst watches how the interval changes as data accumulates. Early intervals are usually wide. As sample size grows, the interval tends to become narrower.
+
 A practical decision rule might be:
 
 - Stop for success if $L_t > 0$
@@ -304,23 +317,25 @@ A practical decision rule might be:
 - Stop for practical success if $L_t$ is above the minimum meaningful effect
 - Continue if the interval still overlaps the decision boundary
 
-Confidence sequences are especially useful when the team wants to see an uncertainty interval over time, not just a stop-or-continue signal.
+Confidence sequences are especially useful when the team wants to see an uncertainty interval over time, not just a stop-or-continue signal. As with always-valid p-values, the calculation is usually handled by software or an experiment platform rather than manually derived for each experiment.
 
 ### E-Values
 
-An e-value is another way to measure evidence against the null. Under the null hypothesis, an e-value is nonnegative and has expectation at most 1:
+An e-value is another way to measure evidence against the null. Unlike a p-value, where smaller means stronger evidence, an e-value becomes more convincing as it gets larger.
+
+A useful intuition is a betting score. If the null hypothesis is true, the e-value behaves like the wealth of a fair or conservative betting strategy: it is nonnegative and its expected value is at most 1.
 
 $$
 E_0[E_t] \le 1
 $$
 
-The useful property comes from Ville's inequality:
+Because the expected value is limited under the null, it is unlikely for the e-value to become very large just by chance. The formal guarantee comes from Ville's inequality:
 
 $$
 P_0\left(\sup_t E_t \ge \frac{1}{\alpha}\right) \le \alpha
 $$
 
-This means a valid stopping rule is:
+This gives a simple optional-stopping rule:
 
 > Stop and reject the null if $E_t \ge 1/\alpha$.
 
@@ -330,11 +345,28 @@ $$
 \frac{1}{0.05} = 20
 $$
 
-So the e-value must reach 20 before the experiment stops for success.
+So the e-value must reach 20 before the experiment stops for success. The direction is opposite from p-values:
+
+| Evidence Measure | Stronger Evidence Means | Example Threshold |
+|---|---:|---:|
+| p-value | Smaller | $p < 0.05$ |
+| e-value | Larger | $E_t \ge 20$ |
+
+One connection is that an always-valid p-value can often be built from the largest e-value observed so far:
+
+$$
+p_t^{\text{AV}}
+=
+\frac{1}{\sup_{s \le t} E_s}
+$$
+
+In words, if the e-value has ever reached 20, the corresponding always-valid p-value is at most 0.05.
 
 E-values are useful because they can be monitored continuously and combined across data streams in principled ways. They are less familiar to many product teams than p-values or confidence intervals, so they usually require more education and tooling.
 
-This is useful when experiments need flexible stopping, such as:
+For technical details, see Johari et al. (2022) and Johari et al. (2017) for always-valid inference in online experiments; Howard et al. (2021) for confidence sequences; and Vovk and Wang (2021) plus Grünwald et al. (2024) for e-values and safe testing.
+
+Always-valid methods are useful when experiments need flexible stopping, such as:
 
 - Stop early for a large positive effect
 - Stop early for harm
@@ -344,6 +376,8 @@ This is useful when experiments need flexible stopping, such as:
 Sequential methods can be more complex to implement than fixed-horizon tests, but they match how many product teams naturally want to operate. The key is that the monitoring method must be chosen before the team starts making stop-or-continue decisions.
 
 ## Bayesian Monitoring
+
+The methods above are frequentist approaches: they aim to control false positive rates or maintain valid coverage under repeated monitoring. Bayesian monitoring takes a different view.
 
 Bayesian methods are often described as allowing peeking. That is partly true, but it needs care.
 
@@ -385,7 +419,7 @@ The practical lesson is:
 
 ## Stopping for Harm Versus Stopping for Success
 
-Early stopping for harm is different from early stopping for success.
+Early stopping can mean different things. Stopping because the treatment is clearly harmful is not the same as stopping because the treatment appears successful.
 
 If a treatment causes severe crashes, payment failures, safety issues, or large revenue loss, the team should stop the experiment. Protecting users and the business comes first.
 
@@ -514,18 +548,27 @@ If an experiment stopped early, the report should say why, under what rule, and 
 
 Peeking is not simply looking at data. The problem is changing the stopping rule after looking.
 
-Fixed-horizon p-values are valid when the analysis happens at the planned endpoint.
-
-Repeatedly checking ordinary p-values and stopping when one becomes significant inflates the false positive rate.
+Fixed-horizon p-values are valid when the analysis happens at the planned endpoint, not when the team repeatedly checks and stops on the best-looking day.
 
 Safety monitoring is necessary and should be separated from early success decisions.
 
 Group sequential testing and alpha spending allow planned interim looks while controlling Type I error.
 
-Always-valid inference allows more flexible monitoring under optional stopping.
+Always-valid inference allows more flexible monitoring under optional stopping, but it requires the right evidence measure.
 
 Bayesian monitoring can support continuous decision-making, but it still needs a predefined decision rule.
 
 Bandits adapt traffic for optimization, but they are not the same as clean causal measurement.
 
 The safest principle is simple: if the experiment may stop early, design it that way from the beginning.
+
+## References
+
+- Grünwald, Peter, Rianne de Heide, and Wouter M. Koolen. "Safe Testing." *Journal of the Royal Statistical Society Series B: Statistical Methodology* 86, no. 5 (2024): 1091-1128. [https://doi.org/10.1093/jrsssb/qkae011](https://doi.org/10.1093/jrsssb/qkae011).
+- Howard, Steven R., Aaditya Ramdas, Jon McAuliffe, and Jasjeet Sekhon. "Time-Uniform, Nonparametric, Nonasymptotic Confidence Sequences." *The Annals of Statistics* 49, no. 2 (2021): 1055-1080. [https://doi.org/10.1214/20-AOS1991](https://doi.org/10.1214/20-AOS1991).
+- Johari, Ramesh, Pete Koomen, Leonid Pekelis, and David Walsh. "Peeking at A/B Tests: Why It Matters, and What to Do about It." In *Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining*, 1517-1525. 2017. [https://doi.org/10.1145/3097983.3097992](https://doi.org/10.1145/3097983.3097992).
+- Johari, Ramesh, Pete Koomen, Leonid Pekelis, and David Walsh. "Always Valid Inference: Continuous Monitoring of A/B Tests." *Operations Research* 70, no. 3 (2022): 1806-1821. [https://doi.org/10.1287/opre.2021.2135](https://doi.org/10.1287/opre.2021.2135).
+- Lan, K. K. Gordon, and David L. DeMets. "Discrete Sequential Boundaries for Clinical Trials." *Biometrika* 70, no. 3 (1983): 659-663. [https://doi.org/10.1093/biomet/70.3.659](https://doi.org/10.1093/biomet/70.3.659).
+- O'Brien, Peter C., and Thomas R. Fleming. "A Multiple Testing Procedure for Clinical Trials." *Biometrics* 35, no. 3 (1979): 549-556. [https://doi.org/10.2307/2530245](https://doi.org/10.2307/2530245).
+- Pocock, Stuart J. "Group Sequential Methods in the Design and Analysis of Clinical Trials." *Biometrika* 64, no. 2 (1977): 191-199. [https://doi.org/10.1093/biomet/64.2.191](https://doi.org/10.1093/biomet/64.2.191).
+- Vovk, Vladimir, and Ruodu Wang. "E-Values: Calibration, Combination, and Applications." *The Annals of Statistics* 49, no. 3 (2021): 1736-1754. [https://doi.org/10.1214/20-AOS2020](https://doi.org/10.1214/20-AOS2020).

@@ -25,13 +25,15 @@
 
   <!-- Column icons and labels -->
   <g transform="translate(330 68)">
-    <circle cx="0" cy="0" r="10" class="blue-person"/>
-    <path d="M0 12 L0 44 M-18 27 L18 27 M-11 68 L0 44 L11 68" fill="none" class="blue-person" stroke-width="6" stroke-linecap="round"/>
+    <path d="M-25 30 L0 6 L25 30" fill="none" class="blue-person" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="-18" y="30" width="36" height="36" rx="2" fill="none" class="blue-person" stroke-width="6"/>
+    <rect x="-5" y="45" width="10" height="21" fill="#ffffff" opacity="0.95"/>
     <text x="0" y="94" text-anchor="middle" class="small-label">Control</text>
   </g>
   <g transform="translate(625 68)">
-    <circle cx="0" cy="0" r="10" class="green-person"/>
-    <path d="M0 12 L0 44 M-18 27 L18 27 M-11 68 L0 44 L11 68" fill="none" class="green-person" stroke-width="6" stroke-linecap="round"/>
+    <path d="M-25 30 L0 6 L25 30" fill="none" class="green-person" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="-18" y="30" width="36" height="36" rx="2" fill="none" class="green-person" stroke-width="6"/>
+    <rect x="-5" y="45" width="10" height="21" fill="#ffffff" opacity="0.95"/>
     <text x="0" y="94" text-anchor="middle" class="small-label">Treatment</text>
   </g>
 

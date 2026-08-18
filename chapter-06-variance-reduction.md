@@ -14,10 +14,9 @@ The answer is often yes.
 
 Variance reduction uses information we already know about users, markets, items, or time periods to remove predictable noise from the outcome. If a user's past behavior strongly predicts their future behavior, then adjusting for past behavior can make the treatment-control comparison sharper.
 
-This chapter covers four common approaches:
+This chapter covers three common approaches:
 
-- Stratification
-- Blocking
+- Stratification and blocking
 - Regression adjustment
 - CUPED
 
@@ -74,6 +73,11 @@ If treatment and control are randomized, these variables should be balanced on a
 
 Variance reduction does not make randomization unnecessary. It makes randomized experiments more precise.
 
+The methods in this chapter use predictable noise in two ways:
+
+- Design-stage methods, such as stratification and blocking, use pre-treatment information before assignment to improve balance.
+- Analysis-stage methods, such as regression adjustment and CUPED, use pre-treatment information after assignment to reduce residual noise.
+
 ## Stratification
 
 Stratification means splitting users into groups before randomization, then randomizing within each group.
@@ -101,7 +105,25 @@ Stratification is most useful when the variable strongly predicts the outcome.
 
 If mobile and desktop users behave differently, stratifying by device can reduce noise. If browser language barely relates to the outcome, stratifying by language may not help much.
 
-## Stratified Analysis
+The math intuition is that stratification reduces noise caused by imbalance between groups.
+
+Let $S$ be the stratification variable, such as new versus returning user. The total outcome variance can be decomposed as:
+
+$$
+\text{Var}(Y)
+=
+E[\text{Var}(Y \mid S)]
++
+\text{Var}(E[Y \mid S])
+$$
+
+The first term is variation within strata. The second term is variation between strata. If new and returning users have very different baseline conversion rates, then $\text{Var}(E[Y \mid S])$ is large.
+
+Stratification does not make users within a stratum identical, and it does not remove all outcome variation. It helps because treatment and control are compared within the same stratum first. New users are compared with new users, returning users with returning users. The final estimate then averages these within-stratum comparisons. This reduces noise from one variant accidentally containing more high-converting users.
+
+Blocking is the same basic idea under a different name. The term is often used when the groups are natural experimental contexts or matched sets, such as stores, cities, schools, restaurants, creators, or time windows. For example, a food delivery platform running a geo experiment might pair cities with similar historical order volume and cancellation rate, then randomize one city in each pair to treatment. The goal is still to compare treatment and control within similar groups, then combine the within-block estimates.
+
+### Stratified Analysis
 
 After stratified randomization, the treatment effect can be estimated within each stratum and then combined.
 
@@ -127,31 +149,6 @@ This approach has two benefits:
 For example, if treatment accidentally has more high-value returning users, a naive comparison may overestimate the treatment effect. Stratified analysis compares treatment and control within new users and within returning users, then combines the comparisons using fixed weights.
 
 The result is often more stable.
-
-## Blocking
-
-Blocking is closely related to stratification. The terms are sometimes used interchangeably.
-
-In practice, blocking often refers to creating small groups of similar units and randomizing within each block.
-
-For example:
-
-- Pair similar cities and assign one to treatment, one to control
-- Group restaurants by order volume and randomize within each group
-- Match creators by historical GMV and randomize within each matched set
-- Randomize time windows within each day of week and hour of day
-
-Blocking is especially useful when the randomization unit is large and the number of units is small.
-
-Suppose a food delivery platform runs a geo experiment across 20 cities. Cities differ greatly in order volume, courier supply, weather, and restaurant density. A simple random assignment of 10 cities to treatment and 10 to control may create imbalance.
-
-Blocking can improve the design:
-
-- Pair cities with similar historical order volume and cancellation rate
-- Randomize one city in each pair to treatment
-- Compare treatment and control within pairs
-
-This reduces the risk that the treatment group contains mostly large, high-growth cities while the control group contains smaller or slower markets.
 
 ## Regression Adjustment
 
@@ -183,118 +180,11 @@ The purpose is precision.
 
 If $X_i$ explains variation in $Y_i$, then the residual noise $\epsilon_i$ becomes smaller. A smaller residual variance leads to a smaller standard error for $\tau$.
 
+Intuitively, regression adjustment compares the part of the outcome that is not predictable from pre-treatment covariates. If past activity, country, or device type explains some of the outcome, the treatment effect is estimated after accounting for that predictable part.
+
 The covariates should be measured before treatment assignment or at least not affected by treatment. Adjusting for post-treatment variables can bias the effect estimate.
 
-## CUPED
-
-CUPED stands for Controlled-experiment Using Pre-Experiment Data.
-
-The method is widely used in online experiments because many user outcomes are strongly correlated over time. A user who watched many videos last week is likely to watch many videos this week. A user who spent a lot last month is more likely to spend this month.
-
-CUPED uses a pre-period metric to reduce variance in the experiment-period outcome.
-
-CUPED can be viewed as a special case of regression adjustment where the covariate is usually a pre-period version of the outcome metric, and the adjustment coefficient is chosen to minimize variance.
-
-Let:
-
-- $Y_i$ be the experiment-period outcome
-- $X_i$ be the pre-period version of the same or related metric
-
-CUPED creates an adjusted outcome:
-
-$$
-Y_i^{\text{CUPED}} = Y_i - \theta (X_i - \bar{X})
-$$
-
-where:
-
-$$
-\theta = \frac{\text{Cov}(Y, X)}{\text{Var}(X)}
-$$
-
-Then the experiment compares the adjusted outcome between treatment and control.
-
-The intuition is simple. If a user had unusually high activity before the experiment, some of their high activity during the experiment was predictable. CUPED subtracts out the predictable part and compares what remains.
-
-## Why CUPED Reduces Variance
-
-The variance of the CUPED-adjusted outcome is:
-
-$$
-\text{Var}(Y^{\text{CUPED}})
-=
-\text{Var}(Y)(1 - \rho^2)
-$$
-
-where $\rho$ is the correlation between the pre-period metric $X$ and the experiment-period outcome $Y$.
-
-This equation is the heart of CUPED.
-
-If $X$ and $Y$ are uncorrelated, then $\rho = 0$, and CUPED does not reduce variance.
-
-If $X$ and $Y$ are highly correlated, CUPED can reduce variance substantially.
-
-For example:
-
-| Correlation Between Pre-Period and Experiment Outcome | Variance Remaining After CUPED | Variance Reduction |
-|---:|---:|---:|
-| 0.0 | 100% | 0% |
-| 0.3 | 91% | 9% |
-| 0.5 | 75% | 25% |
-| 0.7 | 51% | 49% |
-| 0.9 | 19% | 81% |
-
-This is why pre-period metrics are so valuable in experimentation platforms. They can turn noisy user behavior into a more precise treatment estimate.
-
-## CUPED Example
-
-Suppose a video app tests a new recommendation model. The outcome is watch time per user during the experiment.
-
-Users vary a lot:
-
-- Some users usually watch for two minutes
-- Some users usually watch for two hours
-- The treatment effect may be small compared with these baseline differences
-
-Pre-period watch time is strongly predictive of experiment-period watch time. CUPED uses each user's pre-period watch time to adjust their experiment-period watch time.
-
-If a heavy user watches a lot in treatment, CUPED asks:
-
-> Is this user watching more than expected, given their own past behavior?
-
-If a light user watches little in control, CUPED asks:
-
-> Is this user watching less than expected, given their own past behavior?
-
-The treatment-control comparison becomes less about differences between heavy and light users and more about changes relative to each user's baseline.
-
-## CUPED and Difference-in-Differences
-
-CUPED is related in spirit to difference-in-differences, but it is not the same.
-
-A simple pre-post difference would compare:
-
-$$
-Y_i - X_i
-$$
-
-CUPED instead compares:
-
-$$
-Y_i - \theta X_i
-$$
-
-with:
-
-$$
-\theta = \frac{\text{Cov}(Y, X)}{\text{Var}(X)}
-$$
-
-If $\theta = 1$, CUPED resembles a pre-post difference. But usually $\theta$ is estimated from the data and may be less than or greater than 1.
-
-CUPED chooses the adjustment that minimizes variance under a linear relationship between $X$ and $Y$.
-
-## Choosing Covariates
+### Choosing Pre-Treatment Covariates
 
 Good variance reduction depends on good covariates.
 
@@ -327,89 +217,116 @@ For example:
 
 But not every metric has a useful pre-period version. New users may have no history. New product surfaces may have no historical data. In those cases, stratification by available attributes or regression adjustment with other pre-treatment variables may help.
 
-## What Can Go Wrong
+## CUPED
 
-Variance reduction can be powerful, but it has failure modes.
+CUPED stands for Controlled-experiment Using Pre-Experiment Data.
 
-**Using post-treatment covariates**
+The method is widely used in online experiments because many user outcomes are strongly correlated over time. A user who watched many videos last week is likely to watch many videos this week. A user who spent a lot last month is more likely to spend this month.
 
-If a covariate is affected by treatment, adjusting for it can remove part of the treatment effect or introduce bias.
+CUPED uses a pre-period metric to reduce variance in the experiment-period outcome.
 
-For example, if a recommendation change affects click-through rate, then adjusting for experiment-period clicks when measuring purchases can bias the estimated purchase effect.
+CUPED is closely related to regression adjustment. In fact, it can be viewed as a special case where the covariate is usually a pre-period version of the outcome metric.
 
-**Overfitting covariates**
+The difference is mostly presentation:
 
-Adding many weak covariates can make analysis harder to explain and may introduce instability, especially in small experiments.
+- Regression adjustment is usually written as a model that adds covariates.
+- CUPED is usually written as a transformation of the outcome, followed by a simple treatment-control comparison.
 
-**Changing the estimand**
+Both methods use pre-treatment information to remove predictable variation from the outcome. CUPED is popular in online experiments because the pre-period version of the same metric is often one of the strongest predictors of the experiment-period metric.
 
-Some adjustments estimate a covariate-adjusted treatment effect. This is usually fine when the target is the average treatment effect in the experiment population, but the weighting and interpretation should be clear.
+Let:
 
-**Using covariates with missing or inconsistent logging**
+- $Y_i$ be the experiment-period outcome
+- $X_i$ be the pre-period version of the same or related metric
 
-If pre-period data is missing for some users, the missingness strategy should be defined before analysis. Dropping users with missing covariates can change the experiment population.
+CUPED creates an adjusted outcome:
 
-**Applying CUPED to unstable users**
+$$
+Y_i^{\text{CUPED}} = Y_i - \theta (X_i - \bar{X})
+$$
 
-If user behavior changes rapidly for reasons unrelated to treatment, pre-period behavior may be a weak predictor. CUPED helps most when past and future behavior are correlated.
+where:
 
-## Variance Reduction Does Not Fix Bias
+$$
+\theta = \frac{\text{Cov}(Y, X)}{\text{Var}(X)}
+$$
+
+Then the experiment compares the adjusted outcome between treatment and control.
+
+The CUPED estimate can differ slightly from the raw treatment-control difference. The adjusted effect is:
+
+$$
+\widehat{\tau}_{\text{CUPED}}
+=
+(\bar{Y}_T - \bar{Y}_C)
+-
+\theta(\bar{X}_T - \bar{X}_C)
+$$
+
+If treatment and control are perfectly balanced on the pre-period covariate $X$, then $\bar{X}_T - \bar{X}_C = 0$ and the adjusted estimate equals the raw difference. In a finite experiment, the two groups may not be perfectly balanced, so CUPED can slightly adjust the point estimate while reducing variance.
+
+The intuition is simple. If a user had unusually high activity before the experiment, some of their high activity during the experiment was predictable. CUPED subtracts out the predictable part and compares what remains.
+
+The variance of the CUPED-adjusted outcome is:
+
+$$
+\text{Var}(Y^{\text{CUPED}})
+=
+\text{Var}(Y)(1 - \rho^2)
+$$
+
+where $\rho$ is the correlation between the pre-period metric $X$ and the experiment-period outcome $Y$.
+
+This equation is the heart of CUPED.
+
+If $X$ and $Y$ are uncorrelated, then $\rho = 0$, and CUPED does not reduce variance.
+
+If $X$ and $Y$ are highly correlated, CUPED can reduce variance substantially.
+
+| Correlation Between Pre-Period and Experiment Outcome | Variance Remaining After CUPED | Variance Reduction |
+|---:|---:|---:|
+| 0.0 | 100% | 0% |
+| 0.3 | 91% | 9% |
+| 0.5 | 75% | 25% |
+| 0.7 | 51% | 49% |
+| 0.9 | 19% | 81% |
+
+This is why pre-period metrics are so valuable in experimentation platforms. They can turn noisy user behavior into a more precise treatment estimate.
+
+Suppose a video app tests a new recommendation model and the outcome is watch time per user. Some users usually watch for two minutes, while others usually watch for two hours. If pre-period watch time strongly predicts experiment-period watch time, CUPED compares users after adjusting for their own baseline behavior. The treatment-control comparison becomes less about differences between heavy and light users and more about changes relative to what each user was expected to do.
+
+## What Variance Reduction Cannot Fix
 
 Variance reduction makes estimates more precise. It does not make a biased experiment unbiased.
 
-If randomization is broken, CUPED does not fix it.
+The distinction is important:
 
-If treatment and control have different logging behavior, regression adjustment does not fix it.
+- Bias is about whether the estimate is centered on the right answer.
+- Variance is about how spread out the estimate is.
 
-If the analysis conditions on a post-treatment variable, stratification does not automatically fix it.
+Variance reduction mainly addresses variance. It does not fix broken randomization, post-treatment adjustment, logging differences, or interference.
 
-If interference contaminates control users, blocking may reduce noise but does not restore a clean no-treatment comparison.
+Common failure modes include:
 
-This distinction matters:
+**Broken randomization**
 
-- Bias is about whether the estimate is centered on the right answer
-- Variance is about how spread out the estimate is
+If treatment assignment is not random or the traffic split is wrong, CUPED or regression adjustment cannot fully rescue the experiment.
 
-Variance reduction mainly addresses the second problem.
+**Post-treatment covariates**
 
-## A Product Example
+If a covariate is affected by treatment, adjusting for it can remove part of the treatment effect or introduce bias. For example, if a recommendation change affects click-through rate, then adjusting for experiment-period clicks when measuring purchases can bias the estimated purchase effect.
 
-Suppose an e-commerce platform tests a new recommendation ranking model. The primary metric is GMV per user over a two-week experiment.
+**Logging differences**
 
-GMV per user is noisy. Many users buy nothing, some users buy small items, and a few users make large purchases.
+If treatment and control have different exposure or outcome logging, variance reduction may make the wrong estimate look more precise.
 
-A naive experiment analysis compares:
+**Interference**
 
-$$
-\bar{Y}_T - \bar{Y}_C
-$$
+If treatment users affect control users, blocking may reduce noise but does not restore a clean no-treatment comparison.
 
-where $Y_i$ is experiment-period GMV per user.
+**Weak or unstable predictors**
 
-To reduce variance, the team uses last month's GMV per user as a CUPED covariate:
-
-$$
-Y_i^{\text{adj}} =
-Y_i - \theta(X_i - \bar{X})
-$$
-
-where $X_i$ is pre-period GMV per user.
-
-If pre-period GMV and experiment-period GMV have correlation 0.6, then the approximate variance reduction is:
-
-$$
-\rho^2 = 0.6^2 = 0.36
-$$
-
-So the adjusted metric has about 36% less variance:
-
-$$
-1 - \rho^2 = 64\%
-$$
-
-This does not change the product question. The experiment still asks whether the ranking model increases GMV per user. CUPED simply makes the estimate more precise by removing predictable user-level spending differences.
-
-The team should still monitor guardrails such as refund rate, return rate, negative feedback, retention, and creator exposure concentration. A more precise estimate of GMV does not remove the need to understand business tradeoffs.
+If pre-period behavior weakly predicts experiment-period behavior, methods such as CUPED will help little. CUPED works best when past and future outcomes are strongly correlated.
 
 ## Practical Workflow
 
@@ -432,13 +349,13 @@ Variance reduction improves precision without requiring more traffic.
 
 It works by removing predictable variation unrelated to treatment.
 
-Stratification randomizes within important groups to improve balance.
+Stratification and blocking are design-stage methods: they randomize within important groups to improve balance.
 
-Blocking is especially useful when randomization units are large or limited in number.
+Regression adjustment and CUPED are analysis-stage methods: they use pre-treatment covariates to reduce residual variance.
 
-Regression adjustment controls for pre-treatment covariates to reduce residual variance.
+CUPED is a special case of regression adjustment that usually uses a pre-period version of the outcome metric.
 
-CUPED adjusts outcomes using pre-period behavior and can substantially reduce variance when past and future outcomes are correlated.
+Adjusted estimates can differ slightly from raw treatment-control differences when treatment and control are imbalanced on pre-treatment covariates in the realized sample.
 
 Covariates should be measured before treatment and should not be affected by treatment.
 
